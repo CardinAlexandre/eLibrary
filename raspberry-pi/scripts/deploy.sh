@@ -7,7 +7,7 @@
 
 set -e
 
-COMPOSE_FILE="docker-compose.pi-postgres.yml"
+COMPOSE_FILE="docker-compose.pi.yml"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 cd "$PROJECT_ROOT"

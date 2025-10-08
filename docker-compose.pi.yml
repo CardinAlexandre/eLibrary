@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Docker Compose pour Raspberry Pi - Production avec PostgreSQL
 # Optimisé pour faible consommation de ressources
 # Utilise les images pré-buildées depuis GitHub Container Registry
@@ -73,9 +71,9 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-guest}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS:-guest}
-      - RABBITMQ_VM_MEMORY_HIGH_WATERMARK=512MB
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
     restart: unless-stopped
     networks:
       - elibrary-network
