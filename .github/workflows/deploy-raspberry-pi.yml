@@ -42,7 +42,11 @@ jobs:
             --exclude='node_modules' \
             --exclude='*/bin' \
             --exclude='*/obj' \
+            --exclude='*/node_modules' \
             --exclude='*.log' \
+            --exclude='deploy.tar.gz' \
+            --exclude='.vs' \
+            --exclude='*.user' \
             .
 
       - name: Transfer files to Raspberry Pi
