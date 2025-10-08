@@ -1,38 +1,4 @@
-using DotNetEnv;
-
-// Charger les variables d'environnement depuis le fichier .env à la racine du projet
-var envPath = FindEnvFile();
-if (envPath != null)
-{
-    Env.Load(envPath);
-}
-
-static string? FindEnvFile()
-{
-    var currentDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
-    
-    while (currentDirectory != null)
-    {
-        var envFilePath = Path.Combine(currentDirectory.FullName, ".env");
-        if (File.Exists(envFilePath))
-        {
-            return envFilePath;
-        }
-        
-        currentDirectory = currentDirectory.Parent;
-    }
-    
-    return null;
-}
-
 var builder = WebApplication.CreateBuilder(args);
-
-// Configurer la chaîne de connexion depuis les variables d'environnement
-var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
-if (!string.IsNullOrEmpty(connectionString))
-{
-    builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
-}
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -74,5 +40,5 @@ app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
-    public int TemperatureF => 32 + (int)(TemperatureC * 1.8);
+    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
