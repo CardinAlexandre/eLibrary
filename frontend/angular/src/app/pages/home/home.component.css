@@ -1,0 +1,42 @@
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.book-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.book-card img {
+  height: 200px;
+  object-fit: cover;
+}
+
+.authors {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.9rem;
+  margin: 8px 0;
+}
+
+.rating {
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
