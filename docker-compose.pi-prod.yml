@@ -64,7 +64,7 @@ services:
 
   # Gateway Service (pré-buildé depuis GitHub)
   gateway:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-gateway:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-gateway:latest
     container_name: elibrary-gateway
     platform: linux/arm64
     ports:
@@ -83,7 +83,7 @@ services:
 
   # Catalog Service (pré-buildé depuis GitHub)
   catalog-service:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-catalog-service:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-catalog-service:latest
     container_name: elibrary-catalog
     platform: linux/arm64
     environment:
@@ -116,7 +116,7 @@ services:
 
   # Auth Service (pré-buildé depuis GitHub)
   auth-service:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-auth-service:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-auth-service:latest
     container_name: elibrary-auth
     platform: linux/arm64
     environment:
@@ -140,7 +140,7 @@ services:
 
   # Importer Service (pré-buildé depuis GitHub)
   importer-service:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-importer-service:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-importer-service:latest
     container_name: elibrary-importer
     platform: linux/arm64
     environment:
@@ -163,7 +163,7 @@ services:
 
   # Recommender Service (pré-buildé depuis GitHub)
   recommender-service:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-recommender-service:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-recommender-service:latest
     container_name: elibrary-recommender
     platform: linux/arm64
     environment:
@@ -189,7 +189,7 @@ services:
 
   # React Frontend (pré-buildé depuis GitHub)
   frontend-react:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-frontend-react:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-frontend-react:latest
     container_name: elibrary-frontend-react
     platform: linux/arm64
     ports:
@@ -207,7 +207,7 @@ services:
 
   # Angular Frontend (pré-buildé depuis GitHub)
   frontend-angular:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-frontend-angular:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/elibrary-frontend-angular:latest
     container_name: elibrary-frontend-angular
     platform: linux/arm64
     ports:

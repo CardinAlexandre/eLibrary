@@ -416,3 +416,13 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+frontend/react/build/asset-manifest.json
+frontend/react/build/index.html
+frontend/react/build/manifest.json
+frontend/react/build/static/css/main.233b3b67.css
+frontend/react/build/static/css/main.233b3b67.css.map
+frontend/react/build/static/js/488.7425d487.chunk.js
+frontend/react/build/static/js/488.7425d487.chunk.js.map
+frontend/react/build/static/js/main.3dc2de72.js
+frontend/react/build/static/js/main.3dc2de72.js.LICENSE.txt
+frontend/react/build/static/js/main.3dc2de72.js.map
