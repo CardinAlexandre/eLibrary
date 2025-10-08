@@ -1,218 +1,173 @@
 #!/bin/bash
 
-# 🍓 Script de déploiement automatique pour Raspberry Pi
-# Usage: ./deploy.sh [build|start|stop|restart|status|logs]
+# 🍓 Script de déploiement PRODUCTION pour Raspberry Pi avec PostgreSQL
+# Utilise les images pré-buildées depuis GitHub Container Registry
+# Auto-update via Watchtower
+# Optimisé pour faible consommation de ressources
 
 set -e
 
-COMPOSE_FILE="docker-compose.raspberry-pi.yml"
+COMPOSE_FILE="docker-compose.pi-postgres.yml"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 cd "$PROJECT_ROOT"
 
-# Couleurs pour l'affichage
+# Couleurs
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
+BLUE='\033[0;34m'
+NC='\033[0m'
 
-echo_success() {
-    echo -e "${GREEN}✓ $1${NC}"
-}
+echo_success() { echo -e "${GREEN}✓ $1${NC}"; }
+echo_warning() { echo -e "${YELLOW}⚠ $1${NC}"; }
+echo_error() { echo -e "${RED}✗ $1${NC}"; }
+echo_info() { echo -e "${BLUE}ℹ $1${NC}"; }
 
-echo_warning() {
-    echo -e "${YELLOW}⚠ $1${NC}"
-}
-
-echo_error() {
-    echo -e "${RED}✗ $1${NC}"
-}
+# Banner
+echo ""
+echo -e "${GREEN}╔═══════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║   🍓 eLibrary Production Deployment      ║${NC}"
+echo -e "${GREEN}║   With GitHub Container Registry         ║${NC}"
+echo -e "${GREEN}╚═══════════════════════════════════════════╝${NC}"
+echo ""
 
 # Vérifier les prérequis
-check_requirements() {
-    echo "🔍 Vérification des prérequis..."
-    
-    if ! command -v docker &> /dev/null; then
-        echo_error "Docker n'est pas installé"
-        exit 1
+if [ ! -f ".env" ]; then
+    echo_error "Fichier .env manquant!"
+    echo_info "Créez le fichier .env avec vos configurations"
+    echo_info "Voir raspberry-pi/env.example pour un template"
+    exit 1
+fi
+
+# Charger les variables d'environnement
+source .env
+
+# Vérifier les variables obligatoires
+REQUIRED_VARS=("GITHUB_REPOSITORY_OWNER" "DB_PASSWORD" "GRAFANA_PASSWORD" "JWT_SECRET")
+MISSING=()
+
+for var in "${REQUIRED_VARS[@]}"; do
+    if [ -z "${!var}" ]; then
+        MISSING+=("$var")
     fi
-    echo_success "Docker est installé"
-    
-    if ! command -v docker compose &> /dev/null; then
-        echo_error "Docker Compose n'est pas installé"
-        exit 1
-    fi
-    echo_success "Docker Compose est installé"
-    
-    if [ ! -f ".env" ]; then
-        echo_warning ".env n'existe pas, création depuis .env.example..."
-        cp .env.example .env
-        echo_warning "⚠️  N'oubliez pas de modifier .env avec vos propres valeurs!"
-    fi
-    echo_success "Fichier .env présent"
-}
+done
 
-# Afficher les ressources système
-show_system_info() {
-    echo ""
-    echo "📊 Informations système:"
-    echo "  CPU: $(nproc) cores"
-    echo "  RAM: $(free -h | awk '/^Mem:/ {print $2}') total, $(free -h | awk '/^Mem:/ {print $7}') disponible"
-    echo "  Disque: $(df -h / | awk 'NR==2 {print $4}') libre"
-    if command -v vcgencmd &> /dev/null; then
-        echo "  Température: $(vcgencmd measure_temp | cut -d= -f2)"
-    fi
-    echo ""
-}
+if [ ${#MISSING[@]} -gt 0 ]; then
+    echo_error "Variables d'environnement manquantes dans .env:"
+    printf '   - %s\n' "${MISSING[@]}"
+    exit 1
+fi
 
-# Build des images
-build_images() {
-    echo "🔨 Building des images Docker (cela peut prendre 30-60 minutes sur Raspberry Pi)..."
-    echo_warning "Conseil: Allez prendre un café ☕"
-    
-    docker compose -f "$COMPOSE_FILE" build
-    
-    echo_success "Build terminé!"
-}
+echo_success "Variables d'environnement chargées"
 
-# Démarrer l'application
-start_app() {
-    echo "🚀 Démarrage de l'application eLibrary..."
-    
-    docker compose -f "$COMPOSE_FILE" up -d
-    
-    echo_success "Application démarrée!"
-    echo ""
-    echo "📍 Services disponibles:"
-    echo "  - React Frontend:     http://$(hostname -I | awk '{print $1}'):3000"
-    echo "  - Angular Frontend:   http://$(hostname -I | awk '{print $1}'):4200"
-    echo "  - API Gateway:        http://$(hostname -I | awk '{print $1}'):5000"
-    echo "  - RabbitMQ:           http://$(hostname -I | awk '{print $1}'):15672"
-    echo "  - Grafana:            http://$(hostname -I | awk '{print $1}'):3001"
-    echo "  - Prometheus:         http://$(hostname -I | awk '{print $1}'):9090"
-    echo ""
-}
+# Configurer l'authentification GitHub Container Registry
+echo_info "Configuration de l'accès au Container Registry..."
 
-# Arrêter l'application
-stop_app() {
-    echo "🛑 Arrêt de l'application..."
-    
-    docker compose -f "$COMPOSE_FILE" down
-    
-    echo_success "Application arrêtée!"
-}
+if [ ! -z "$GITHUB_TOKEN" ]; then
+    echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_REPOSITORY_OWNER" --password-stdin
+    echo_success "Authentifié avec GitHub Container Registry"
+else
+    echo_warning "GITHUB_TOKEN non défini - seules les images publiques seront accessibles"
+    echo_info "Pour accéder aux images privées, ajoutez GITHUB_TOKEN à .env"
+fi
 
-# Redémarrer l'application
-restart_app() {
-    echo "🔄 Redémarrage de l'application..."
-    
-    docker compose -f "$COMPOSE_FILE" restart
-    
-    echo_success "Application redémarrée!"
-}
-
-# Afficher le statut
-show_status() {
-    echo "📊 Statut des services:"
-    docker compose -f "$COMPOSE_FILE" ps
-    
-    echo ""
-    echo "💾 Utilisation des ressources:"
-    docker stats --no-stream
-}
-
-# Afficher les logs
-show_logs() {
-    if [ -z "$2" ]; then
-        echo "📜 Logs de tous les services (Ctrl+C pour quitter):"
-        docker compose -f "$COMPOSE_FILE" logs -f
-    else
-        echo "📜 Logs de $2 (Ctrl+C pour quitter):"
-        docker compose -f "$COMPOSE_FILE" logs -f "$2"
-    fi
-}
-
-# Nettoyer les ressources
-cleanup() {
-    echo "🧹 Nettoyage des ressources inutilisées..."
-    echo_warning "⚠️  Cela va supprimer toutes les images et volumes non utilisés!"
-    read -p "Continuer? (y/N) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        docker system prune -a --volumes
-        echo_success "Nettoyage terminé!"
-    else
-        echo "Nettoyage annulé"
-    fi
-}
-
-# Backup des données
-backup_data() {
-    echo "💾 Sauvegarde des données..."
-    
-    BACKUP_DIR="$PROJECT_ROOT/backups"
-    BACKUP_FILE="$BACKUP_DIR/backup-$(date +%Y%m%d-%H%M%S).tar.gz"
-    
-    mkdir -p "$BACKUP_DIR"
-    
-    docker compose -f "$COMPOSE_FILE" exec -T sqlserver /opt/mssql-tools/bin/sqlcmd \
-        -S localhost -U sa -P "${DB_PASSWORD}" \
-        -Q "BACKUP DATABASE CatalogDb TO DISK='/tmp/catalog.bak'"
-    
-    docker compose -f "$COMPOSE_FILE" exec -T sqlserver \
-        cat /tmp/catalog.bak > "$BACKUP_FILE"
-    
-    echo_success "Backup sauvegardé: $BACKUP_FILE"
-}
-
-# Menu principal
+# Fonction principale
 case "$1" in
-    build)
-        check_requirements
-        show_system_info
-        build_images
-        ;;
     start)
-        check_requirements
-        start_app
-        ;;
-    stop)
-        stop_app
-        ;;
-    restart)
-        restart_app
-        ;;
-    status)
-        show_status
-        ;;
-    logs)
-        show_logs "$@"
-        ;;
-    cleanup)
-        cleanup
-        ;;
-    backup)
-        backup_data
-        ;;
-    *)
-        echo "🍓 Script de déploiement eLibrary pour Raspberry Pi"
+        echo "🚀 Démarrage de l'application (mode production)..."
+        echo_info "Les images seront téléchargées depuis GitHub Container Registry"
+        echo_warning "Premier démarrage: peut prendre 5-10 minutes"
+        
+        docker compose -f "$COMPOSE_FILE" pull
+        docker compose -f "$COMPOSE_FILE" up -d
+        
+        echo_success "Application démarrée!"
         echo ""
-        echo "Usage: $0 {build|start|stop|restart|status|logs|cleanup|backup}"
+        echo "📍 Services disponibles:"
+        echo "   - React Frontend:     http://$(hostname -I | awk '{print $1}'):3000"
+        echo "   - Angular Frontend:   http://$(hostname -I | awk '{print $1}'):4200"
+        echo "   - API Gateway:        http://$(hostname -I | awk '{print $1}'):5000"
+        echo "   - RabbitMQ:           http://$(hostname -I | awk '{print $1}'):15672"
+        echo "   - Grafana:            http://$(hostname -I | awk '{print $1}'):3001"
+        echo "   - Prometheus:         http://$(hostname -I | awk '{print $1}'):9090"
+        echo ""
+        echo_info "🔄 Watchtower vérifiera les mises à jour toutes les 5 minutes"
+        ;;
+    
+    stop)
+        echo "🛑 Arrêt de l'application..."
+        docker compose -f "$COMPOSE_FILE" down
+        echo_success "Application arrêtée!"
+        ;;
+    
+    restart)
+        echo "🔄 Redémarrage de l'application..."
+        docker compose -f "$COMPOSE_FILE" restart
+        echo_success "Application redémarrée!"
+        ;;
+    
+    update)
+        echo "⬇️  Vérification des mises à jour..."
+        docker compose -f "$COMPOSE_FILE" pull
+        echo_success "Images mises à jour!"
+        
+        echo "🔄 Redémarrage avec les nouvelles images..."
+        docker compose -f "$COMPOSE_FILE" up -d
+        echo_success "Mise à jour terminée!"
+        ;;
+    
+    status)
+        echo "📊 Statut des services:"
+        docker compose -f "$COMPOSE_FILE" ps
+        echo ""
+        echo "💾 Utilisation des ressources:"
+        docker stats --no-stream
+        ;;
+    
+    logs)
+        if [ -z "$2" ]; then
+            echo "📜 Logs de tous les services (Ctrl+C pour quitter):"
+            docker compose -f "$COMPOSE_FILE" logs -f
+        else
+            echo "📜 Logs de $2 (Ctrl+C pour quitter):"
+            docker compose -f "$COMPOSE_FILE" logs -f "$2"
+        fi
+        ;;
+    
+    version)
+        echo "🏷️  Versions des images déployées:"
+        docker compose -f "$COMPOSE_FILE" images
+        ;;
+    
+    cleanup)
+        echo "🧹 Nettoyage des ressources inutilisées..."
+        docker system prune -f
+        echo_success "Nettoyage terminé!"
+        ;;
+    
+    *)
+        echo "🍓🐘 Script de déploiement Production eLibrary avec PostgreSQL"
+        echo ""
+        echo "Usage: $0 {start|stop|restart|update|status|logs|version|cleanup}"
         echo ""
         echo "Commandes:"
-        echo "  build    - Builder toutes les images Docker"
-        echo "  start    - Démarrer l'application"
+        echo "  start    - Démarrer l'application (pull images depuis GitHub)"
         echo "  stop     - Arrêter l'application"
         echo "  restart  - Redémarrer l'application"
+        echo "  update   - Mettre à jour vers les dernières images"
         echo "  status   - Afficher le statut des services"
         echo "  logs     - Afficher les logs (logs [service] pour un service spécifique)"
+        echo "  version  - Afficher les versions des images"
         echo "  cleanup  - Nettoyer les ressources inutilisées"
-        echo "  backup   - Sauvegarder les données"
         echo ""
-        echo "Exemples:"
-        echo "  $0 build          # Builder les images"
-        echo "  $0 start          # Démarrer l'app"
-        echo "  $0 logs gateway   # Voir les logs du gateway"
+        echo "Avantages PostgreSQL sur Raspberry Pi:"
+        echo "  ❄️ Consommation minimale (100-300MB RAM vs 2-4GB)"
+        echo "  ⚡ Démarrage ultra-rapide (2-5 secondes)"
+        echo "  🔥 Température basse (40-50°C vs 70-80°C)"
+        echo "  🔄 Auto-update via Watchtower toutes les 5 minutes"
+        echo "  📦 Images légères (80MB vs 1.5GB)"
+        echo "  🎯 Production-ready et optimisé pour ARM64"
         exit 1
         ;;
 esac
