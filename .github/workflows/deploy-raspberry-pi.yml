@@ -53,9 +53,6 @@ jobs:
             echo "   1. Allez dans Settings → Secrets and variables → Actions"
             echo "   2. Cliquez sur 'New repository secret'"
             echo "   3. Ajoutez chaque secret manquant"
-            echo ""
-            echo "📖 Documentation complète:"
-            echo "   Voir raspberry-pi/CICD-SETUP.md"
             exit 1
           fi
           
@@ -108,6 +105,33 @@ jobs:
           ssh ${{ secrets.RASPBERRY_PI_USER }}@${{ secrets.RASPBERRY_PI_HOST }} << 'ENDSSH'
             set -e
             
+            echo "🍓 Detecting Raspberry Pi architecture..."
+            ARCH=$(uname -m)
+            echo "   Architecture detected: $ARCH"
+            
+            case "$ARCH" in
+              aarch64|arm64)
+                echo "   ✅ ARM64 (Raspberry Pi 4, 5, 400, CM4)"
+                DOCKER_PLATFORM="linux/arm64"
+                ;;
+              armv7l)
+                echo "   ✅ ARMv7 (Raspberry Pi 2, 3, 3B+)"
+                DOCKER_PLATFORM="linux/arm/v7"
+                ;;
+              armv6l)
+                echo "   ✅ ARMv6 (Raspberry Pi 1, Zero, Zero W)"
+                DOCKER_PLATFORM="linux/arm/v6"
+                echo "   ⚠️  Warning: SQL Server nécessite ARM64. Utilisez PostgreSQL ou MariaDB à la place."
+                ;;
+              *)
+                echo "   ❌ Architecture non supportée: $ARCH"
+                exit 1
+                ;;
+            esac
+            
+            export DOCKER_DEFAULT_PLATFORM=$DOCKER_PLATFORM
+            echo "   Platform configured: $DOCKER_PLATFORM"
+            
             echo "📦 Extracting deployment package..."
             cd /home/${{ secrets.RASPBERRY_PI_USER }}/eLibrary || mkdir -p /home/${{ secrets.RASPBERRY_PI_USER }}/eLibrary && cd /home/${{ secrets.RASPBERRY_PI_USER }}/eLibrary
             tar -xzf /tmp/deploy.tar.gz
@@ -133,10 +157,11 @@ jobs:
           EOF
             
             echo "🐳 Building Docker images..."
-            docker compose -f ${{ env.DOCKER_COMPOSE_FILE }} build --parallel
+            echo "   Platform: $DOCKER_PLATFORM"
+            DOCKER_DEFAULT_PLATFORM=$DOCKER_PLATFORM docker compose -f ${{ env.DOCKER_COMPOSE_FILE }} build --parallel
             
             echo "🚀 Deploying application..."
-            docker compose -f ${{ env.DOCKER_COMPOSE_FILE }} up -d
+            DOCKER_DEFAULT_PLATFORM=$DOCKER_PLATFORM docker compose -f ${{ env.DOCKER_COMPOSE_FILE }} up -d
             
             echo "🧹 Cleaning up old images..."
             docker image prune -f
