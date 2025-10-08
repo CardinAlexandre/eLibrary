@@ -1,6 +1,11 @@
 # Build stage
 FROM node:20-alpine AS build
 WORKDIR /app
+
+# Build argument pour l'URL de l'API
+ARG REACT_APP_API_URL=http://localhost:8080
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 COPY . .

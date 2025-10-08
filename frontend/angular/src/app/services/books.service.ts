@@ -13,7 +13,7 @@ export class BooksService {
   constructor(private http: HttpClient) {}
 
   getBooks(page: number = 1, pageSize: number = 20, genre?: string, language?: string): Observable<PagedResult<Book>> {
-    let url = `${this.apiUrl}/api/catalog/books?page=${page}&pageSize=${pageSize}`;
+    let url = `${this.apiUrl}/catalog/books?page=${page}&pageSize=${pageSize}`;
     if (genre) url += `&genre=${genre}`;
     if (language) url += `&language=${language}`;
     
@@ -21,12 +21,12 @@ export class BooksService {
   }
 
   getBookById(id: string): Observable<Book> {
-    return this.http.get<Book>(`${this.apiUrl}/api/catalog/books/${id}`);
+    return this.http.get<Book>(`${this.apiUrl}/catalog/books/${id}`);
   }
 
   searchBooks(query: string, page: number = 1, pageSize: number = 20): Observable<PagedResult<Book>> {
     return this.http.get<PagedResult<Book>>(
-      `${this.apiUrl}/api/catalog/books/search?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`
+      `${this.apiUrl}/catalog/books/search?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`
     );
   }
 }
