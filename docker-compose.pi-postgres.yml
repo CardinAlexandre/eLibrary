@@ -1,0 +1,321 @@
+version: '3.8'
+
+# Docker Compose pour Raspberry Pi - Production avec PostgreSQL
+# Optimisé pour faible consommation de ressources
+# Utilise les images pré-buildées depuis GitHub Container Registry
+
+services:
+  # PostgreSQL (Léger et performant sur Raspberry Pi)
+  postgres:
+    image: postgres:16-alpine
+    container_name: elibrary-postgres
+    platform: linux/arm64
+    environment:
+      - POSTGRES_USER=elibrary
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=eLibraryDb
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init-databases.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: unless-stopped
+    networks:
+      - elibrary-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U elibrary"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Optimisation mémoire pour Raspberry Pi
+    command: >
+      postgres
+      -c shared_buffers=256MB
+      -c effective_cache_size=512MB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=4MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: elibrary-redis
+    platform: linux/arm64
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - elibrary-network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: elibrary-rabbitmq
+    platform: linux/arm64
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-guest}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS:-guest}
+      - RABBITMQ_VM_MEMORY_HIGH_WATERMARK=512MB
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    restart: unless-stopped
+    networks:
+      - elibrary-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Gateway Service (pré-buildé depuis GitHub)
+  gateway:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-cardinalexandre}/elibrary-gateway:${IMAGE_TAG:-latest}
+    container_name: elibrary-gateway
+    platform: linux/arm64
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+    depends_on:
+      catalog-service:
+        condition: service_started
+      auth-service:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - elibrary-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # Catalog Service (pré-buildé depuis GitHub)
+  catalog-service:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-cardinalexandre}/elibrary-catalog-service:${IMAGE_TAG:-latest}
+    container_name: elibrary-catalog
+    platform: linux/arm64
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=CatalogDb;Username=elibrary;Password=${DB_PASSWORD}
+      - ConnectionStrings__Redis=${REDIS_CONNECTION_STRING:-redis:6379}
+      - RabbitMQ__HostName=${RABBITMQ_HOST:-rabbitmq}
+      - RabbitMQ__UserName=${RABBITMQ_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_PASS:-guest}
+      - JwtSettings__Secret=${JWT_SECRET}
+      - JwtSettings__Issuer=${JWT_ISSUER:-eLibrary-API}
+      - JwtSettings__Audience=${JWT_AUDIENCE:-eLibrary-Clients}
+      - JwtSettings__ExpirationInMinutes=${JWT_EXPIRATION_MINUTES:-60}
+      - GoogleBooksApi__ApiKey=${GOOGLE_BOOKS_API_KEY}
+      - FeatureFlags__EnableRecommendations=${ENABLE_RECOMMENDATIONS:-true}
+      - FeatureFlags__EnableRealTimeNotifications=${ENABLE_REAL_TIME_NOTIFICATIONS:-true}
+      - FeatureFlags__EnableGoogleBooksEnrichment=${ENABLE_GOOGLE_BOOKS_ENRICHMENT:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - elibrary-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # Auth Service (pré-buildé depuis GitHub)
+  auth-service:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-cardinalexandre}/elibrary-auth-service:${IMAGE_TAG:-latest}
+    container_name: elibrary-auth
+    platform: linux/arm64
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=AuthDb;Username=elibrary;Password=${DB_PASSWORD}
+      - ConnectionStrings__Redis=${REDIS_CONNECTION_STRING:-redis:6379}
+      - JwtSettings__Secret=${JWT_SECRET}
+      - JwtSettings__Issuer=${JWT_ISSUER:-eLibrary-API}
+      - JwtSettings__Audience=${JWT_AUDIENCE:-eLibrary-Clients}
+      - JwtSettings__ExpirationInMinutes=${JWT_EXPIRATION_MINUTES:-60}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - elibrary-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # Importer Service (pré-buildé depuis GitHub)
+  importer-service:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-cardinalexandre}/elibrary-importer-service:${IMAGE_TAG:-latest}
+    container_name: elibrary-importer
+    platform: linux/arm64
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - RabbitMQ__HostName=${RABBITMQ_HOST:-rabbitmq}
+      - RabbitMQ__UserName=${RABBITMQ_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_PASS:-guest}
+      - GoogleBooksApi__ApiKey=${GOOGLE_BOOKS_API_KEY}
+      - CatalogService__BaseUrl=http://catalog-service:80
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      catalog-service:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - elibrary-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # Recommender Service (pré-buildé depuis GitHub)
+  recommender-service:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-cardinalexandre}/elibrary-recommender-service:${IMAGE_TAG:-latest}
+    container_name: elibrary-recommender
+    platform: linux/arm64
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=RecommenderDb;Username=elibrary;Password=${DB_PASSWORD}
+      - ConnectionStrings__Redis=${REDIS_CONNECTION_STRING:-redis:6379}
+      - RabbitMQ__HostName=${RABBITMQ_HOST:-rabbitmq}
+      - RabbitMQ__UserName=${RABBITMQ_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_PASS:-guest}
+      - CatalogService__BaseUrl=http://catalog-service:80
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - elibrary-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # React Frontend (pré-buildé depuis GitHub)
+  frontend-react:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-cardinalexandre}/elibrary-frontend-react:${IMAGE_TAG:-latest}
+    container_name: elibrary-frontend-react
+    platform: linux/arm64
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=${API_GATEWAY_URL:-http://localhost:5000}
+    depends_on:
+      gateway:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - elibrary-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # Angular Frontend (pré-buildé depuis GitHub)
+  frontend-angular:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-cardinalexandre}/elibrary-frontend-angular:${IMAGE_TAG:-latest}
+    container_name: elibrary-frontend-angular
+    platform: linux/arm64
+    ports:
+      - "4200:80"
+    environment:
+      - NG_API_URL=${API_GATEWAY_URL:-http://localhost:5000}
+    depends_on:
+      gateway:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - elibrary-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # Prometheus (Monitoring)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: elibrary-prometheus
+    platform: linux/arm64
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+      - '--storage.tsdb.retention.size=5GB'
+    restart: unless-stopped
+    networks:
+      - elibrary-network
+
+  # Grafana (Dashboards)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: elibrary-grafana
+    platform: linux/arm64
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+    volumes:
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - elibrary-network
+
+  # Watchtower - Auto-update des conteneurs
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: elibrary-watchtower
+    platform: linux/arm64
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.docker/config.json:/config.json:ro
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=300
+      - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_INCLUDE_RESTARTING=true
+      - WATCHTOWER_NOTIFICATIONS=${WATCHTOWER_NOTIFICATIONS:-}
+      - WATCHTOWER_NOTIFICATION_URL=${WATCHTOWER_NOTIFICATION_URL:-}
+    restart: unless-stopped
+    networks:
+      - elibrary-network
+
+networks:
+  elibrary-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  rabbitmq-data:
+  prometheus-data:
+  grafana-data:
+

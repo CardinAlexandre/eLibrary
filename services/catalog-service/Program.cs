@@ -24,7 +24,7 @@ builder.Host.UseSerilog();
 
 // Database Configuration
 builder.Services.AddDbContext<CatalogDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Redis Cache
 builder.Services.AddStackExchangeRedisCache(options =>

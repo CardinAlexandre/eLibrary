@@ -18,7 +18,7 @@ builder.Host.UseSerilog();
 
 // Database
 builder.Services.AddDbContext<RecommenderDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Redis Cache
 builder.Services.AddStackExchangeRedisCache(options =>
