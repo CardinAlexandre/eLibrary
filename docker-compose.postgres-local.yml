@@ -165,6 +165,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
+      - JwtSettings__Secret=${JWT_SECRET:-SuperSecretKeyForJWTTesting2025!}
+      - JwtSettings__Issuer=eLibrary-API
+      - JwtSettings__Audience=eLibrary-Clients
     depends_on:
       - catalog-service
       - auth-service
@@ -176,11 +179,11 @@ services:
     build:
       context: ./frontend/react
       dockerfile: Dockerfile
+      args:
+        - REACT_APP_API_URL=
     container_name: elibrary-frontend-react-test
     ports:
       - "3000:80"
-    environment:
-      - REACT_APP_API_URL=http://localhost:8080
     depends_on:
       - gateway
     networks:
@@ -191,11 +194,11 @@ services:
     build:
       context: ./frontend/angular
       dockerfile: Dockerfile
+      args:
+        - NG_API_URL=
     container_name: elibrary-frontend-angular-test
     ports:
       - "4200:80"
-    environment:
-      - NG_API_URL=http://localhost:8080
     depends_on:
       - gateway
     networks:

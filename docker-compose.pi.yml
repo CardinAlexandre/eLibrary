@@ -93,6 +93,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:80
+      # Configuration JWT
+      - JwtSettings__Secret=${JWT_SECRET}
+      - JwtSettings__Issuer=${JWT_ISSUER:-eLibrary-API}
+      - JwtSettings__Audience=${JWT_AUDIENCE:-eLibrary-Clients}
     depends_on:
       catalog-service:
         condition: service_started
@@ -217,8 +221,6 @@ services:
     platform: linux/arm64
     ports:
       - "3000:80"
-    environment:
-      - REACT_APP_API_URL=${API_GATEWAY_URL:-http://localhost:8080}
     depends_on:
       gateway:
         condition: service_started
@@ -235,8 +237,6 @@ services:
     platform: linux/arm64
     ports:
       - "4200:80"
-    environment:
-      - NG_API_URL=${API_GATEWAY_URL:-http://localhost:8080}
     depends_on:
       gateway:
         condition: service_started
