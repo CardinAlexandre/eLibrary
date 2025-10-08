@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "RecommenderService": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:51256;http://localhost:51257"
+    }
+  }
+}
