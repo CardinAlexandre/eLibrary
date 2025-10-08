@@ -1,0 +1,33 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'gateway'
+    static_configs:
+      - targets: ['gateway:80']
+
+  - job_name: 'catalog-service'
+    static_configs:
+      - targets: ['catalog-service:80']
+
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['auth-service:80']
+
+  - job_name: 'importer-service'
+    static_configs:
+      - targets: ['importer-service:80']
+
+  - job_name: 'recommender-service'
+    static_configs:
+      - targets: ['recommender-service:80']
+
+  - job_name: 'analytics-service'
+    static_configs:
+      - targets: ['analytics-service:80']
+
