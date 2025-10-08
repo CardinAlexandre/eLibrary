@@ -1,7 +1,6 @@
 using CatalogService.Data;
-using CatalogService.Infrastructure;
 using CatalogService.Seeders;
-using CatalogService.Services;
+using DotNetEnv;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +9,37 @@ using Prometheus;
 using Serilog;
 using System.Text;
 
+var envPath = FindEnvFile();
+if (envPath != null)
+{
+    Env.Load(envPath);
+}
+
+static string? FindEnvFile()
+{
+    var currentDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
+
+    while (currentDirectory != null)
+    {
+        var envFilePath = Path.Combine(currentDirectory.FullName, ".env");
+        if (File.Exists(envFilePath))
+        {
+            return envFilePath;
+        }
+
+        currentDirectory = currentDirectory.Parent;
+    }
+
+    return null;
+}
+
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+if (!string.IsNullOrEmpty(connectionString))
+{
+    builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
+}
 
 // Serilog Configuration
 Log.Logger = new LoggerConfiguration()
@@ -25,40 +54,6 @@ builder.Host.UseSerilog();
 // Database Configuration
 builder.Services.AddDbContext<CatalogDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Redis Cache
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
-});
-
-// MediatR & FluentValidation
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
-
-// RabbitMQ
-builder.Services.AddSingleton<RabbitMQService>();
-
-// WebSocket Notification Client
-builder.Services.AddHttpClient<NotificationClient>();
-
-// JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings["Secret"] ?? "SuperSecretKeyForJWTTokenGeneration2025!"))
-        };
-    });
 
 builder.Services.AddAuthorization();
 
@@ -126,16 +121,6 @@ app.UseHttpMetrics();
 app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapMetrics();
-
-// Seed Database if argument provided
-if (args.Contains("seed"))
-{
-    using var scope = app.Services.CreateScope();
-    var seeder = new DatabaseSeeder(scope.ServiceProvider);
-    await seeder.SeedAsync();
-    Log.Information("Database seeded successfully");
-    return;
-}
 
 // Database Migration
 using (var scope = app.Services.CreateScope())
