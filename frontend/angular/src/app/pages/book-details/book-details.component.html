@@ -1,0 +1,56 @@
+<div class="container">
+  <button mat-raised-button (click)="goBack()">
+    <mat-icon>arrow_back</mat-icon>
+    Retour
+  </button>
+
+  <div *ngIf="loading$ | async" class="loading-spinner">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <mat-card *ngIf="book$ | async as book" class="book-details">
+    <div class="book-content">
+      <div class="book-image">
+        <img [src]="book.coverUrl || 'https://via.placeholder.com/300x400'" [alt]="book.title">
+      </div>
+
+      <div class="book-info">
+        <h1>{{ book.title }}</h1>
+        <h3>Par {{ book.authors.join(', ') }}</h3>
+
+        <mat-chip-set>
+          <mat-chip>{{ book.bookType }}</mat-chip>
+          <mat-chip>{{ book.genre }}</mat-chip>
+          <mat-chip [color]="book.isAvailable ? 'primary' : 'warn'">
+            {{ book.isAvailable ? 'Disponible' : 'Indisponible' }}
+          </mat-chip>
+        </mat-chip-set>
+
+        <div class="rating">
+          ⭐ {{ book.averageRating.toFixed(1) }} / 5.0 ({{ book.reviewCount }} avis)
+        </div>
+
+        <p class="description">{{ book.description }}</p>
+
+        <div class="metadata">
+          <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+          <p><strong>Pages:</strong> {{ book.pages }}</p>
+          <p><strong>Langue:</strong> {{ book.language }}</p>
+          <p><strong>Date de publication:</strong> {{ book.publishedDate | date }}</p>
+        </div>
+
+        <div class="tags">
+          <strong>Tags:</strong>
+          <mat-chip-set>
+            <mat-chip *ngFor="let tag of book.tags">{{ tag }}</mat-chip>
+          </mat-chip-set>
+        </div>
+
+        <button *ngIf="book.isAvailable" mat-raised-button color="primary" class="borrow-btn">
+          Emprunter ce livre
+        </button>
+      </div>
+    </div>
+  </mat-card>
+</div>
+
