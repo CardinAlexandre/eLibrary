@@ -1,0 +1,32 @@
+<div class="login-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Connexion</mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" required>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" style="width: 100%; margin-top: 10px;">
+          <mat-label>Mot de passe</mat-label>
+          <input matInput type="password" formControlName="password" required>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" style="width: 100%; margin-top: 20px;" [disabled]="!loginForm.valid">
+          Se connecter
+        </button>
+      </form>
+
+      <div class="test-accounts">
+        <p><strong>Comptes de test :</strong></p>
+        <p>Admin: admin&#64;elibrary.com / Admin&#64;2025!</p>
+        <p>Member: member&#64;elibrary.com / Member&#64;2025!</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+

@@ -1,0 +1,304 @@
+version: '3.8'
+
+services:
+  # Infrastructure
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: elibrary-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=eLibrary@2025!
+      - MSSQL_PID=Developer
+    ports:
+      - "1434:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "eLibrary@2025!" -Q "SELECT 1" -C || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 15
+      start_period: 60s
+
+  redis:
+    image: redis:7-alpine
+    container_name: elibrary-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: elibrary-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: elibrary-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: elibrary-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+
+  # Microservices
+  gateway:
+    build:
+      context: ./services/gateway
+      dockerfile: Dockerfile
+    container_name: elibrary-gateway
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__Redis=redis:6379
+      - ReverseProxy__Clusters__catalog__Destinations__destination1__Address=http://catalog-service:80
+      - ReverseProxy__Clusters__auth__Destinations__destination1__Address=http://auth-service:80
+      - ReverseProxy__Clusters__importer__Destinations__destination1__Address=http://importer-service:80
+      - ReverseProxy__Clusters__recommender__Destinations__destination1__Address=http://recommender-service:80
+      - ReverseProxy__Clusters__analytics__Destinations__destination1__Address=http://analytics-service:80
+      - JwtSettings__Secret=SuperSecretKeyForJWTTokenGeneration2025!
+      - JwtSettings__Issuer=eLibrary
+      - JwtSettings__Audience=eLibrary-Clients
+    depends_on:
+      redis:
+        condition: service_healthy
+      catalog-service:
+        condition: service_started
+      auth-service:
+        condition: service_started
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  catalog-service:
+    build:
+      context: ./services/catalog-service
+      dockerfile: Dockerfile
+    container_name: elibrary-catalog
+    ports:
+      - "5001:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CatalogDb;User Id=sa;Password=eLibrary@2025!;TrustServerCertificate=True;
+      - ConnectionStrings__Redis=redis:6379
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: elibrary-auth
+    ports:
+      - "5002:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AuthDb;User Id=sa;Password=eLibrary@2025!;TrustServerCertificate=True;
+      - ConnectionStrings__Redis=redis:6379
+      - JwtSettings__Secret=SuperSecretKeyForJWTTokenGeneration2025!
+      - JwtSettings__Issuer=eLibrary
+      - JwtSettings__Audience=eLibrary-Clients
+      - JwtSettings__ExpirationInMinutes=60
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  importer-service:
+    build:
+      context: ./services/importer-service
+      dockerfile: Dockerfile
+    container_name: elibrary-importer
+    ports:
+      - "5003:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__Redis=redis:6379
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - GoogleBooksApi__BaseUrl=https://www.googleapis.com/books/v1
+      - GoogleBooksApi__ApiKey=YOUR_API_KEY_HERE
+      - CatalogService__BaseUrl=http://catalog-service:80
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      catalog-service:
+        condition: service_started
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  recommender-service:
+    build:
+      context: ./services/recommender-service
+      dockerfile: Dockerfile
+    container_name: elibrary-recommender
+    ports:
+      - "5004:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=RecommenderDb;User Id=sa;Password=eLibrary@2025!;TrustServerCertificate=True;
+      - ConnectionStrings__Redis=redis:6379
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - CatalogService__BaseUrl=http://catalog-service:80
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+      dockerfile: Dockerfile
+    container_name: elibrary-analytics
+    ports:
+      - "5005:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AnalyticsDb;User Id=sa;Password=eLibrary@2025!;TrustServerCertificate=True;
+      - ConnectionStrings__Redis=redis:6379
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  # Frontends
+  frontend-react:
+    build:
+      context: ./frontend/react
+      dockerfile: Dockerfile
+    container_name: elibrary-frontend-react
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+      - REACT_APP_WS_URL=ws://localhost:5000/ws
+    depends_on:
+      - gateway
+
+  frontend-angular:
+    build:
+      context: ./frontend/angular
+      dockerfile: Dockerfile
+    container_name: elibrary-frontend-angular
+    ports:
+      - "4200:80"
+    environment:
+      - API_URL=http://localhost:5000
+      - WS_URL=ws://localhost:5000/ws
+    depends_on:
+      - gateway
+
+volumes:
+  sqlserver-data:
+  redis-data:
+  rabbitmq-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  default:
+    name: elibrary-network
+

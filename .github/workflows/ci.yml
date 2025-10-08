@@ -1,0 +1,288 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  NODE_VERSION: '20.x'
+
+jobs:
+  backend-tests:
+    name: Backend Tests & Linting
+    runs-on: ubuntu-latest
+    
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: TestPassword123!
+        options: >-
+          --health-cmd "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P TestPassword123! -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 3s
+          --health-retries 10
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: Restore dependencies
+        run: |
+          dotnet restore services/catalog-service/CatalogService.csproj
+          dotnet restore services/auth-service/AuthService.csproj
+          dotnet restore services/gateway/Gateway.csproj
+          dotnet restore services/importer-service/ImporterService.csproj
+          dotnet restore services/recommender-service/RecommenderService.csproj
+          dotnet restore services/analytics-service/AnalyticsService.csproj
+      
+      - name: Build
+        run: |
+          dotnet build services/catalog-service/CatalogService.csproj --no-restore
+          dotnet build services/auth-service/AuthService.csproj --no-restore
+          dotnet build services/gateway/Gateway.csproj --no-restore
+          dotnet build services/importer-service/ImporterService.csproj --no-restore
+          dotnet build services/recommender-service/RecommenderService.csproj --no-restore
+          dotnet build services/analytics-service/AnalyticsService.csproj --no-restore
+      
+      - name: Format check
+        run: dotnet format --verify-no-changes --verbosity diagnostic
+      
+      - name: Run tests
+        run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage"
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: '**/coverage.cobertura.xml'
+          flags: backend
+
+  frontend-react-tests:
+    name: React Frontend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/react/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: frontend/react
+        run: npm ci
+      
+      - name: Lint
+        working-directory: frontend/react
+        run: npm run lint
+      
+      - name: Test
+        working-directory: frontend/react
+        run: npm test -- --coverage --watchAll=false
+      
+      - name: Build
+        working-directory: frontend/react
+        run: npm run build
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: frontend/react/coverage/lcov.info
+          flags: frontend-react
+
+  frontend-angular-tests:
+    name: Angular Frontend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/angular/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: frontend/angular
+        run: npm ci
+      
+      - name: Lint
+        working-directory: frontend/angular
+        run: npm run lint
+      
+      - name: Test
+        working-directory: frontend/angular
+        run: npm test -- --watch=false --code-coverage
+      
+      - name: Build
+        working-directory: frontend/angular
+        run: npm run build
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: frontend/angular/coverage/lcov.info
+          flags: frontend-angular
+
+  pr-docker-verify:
+    name: Verify Docker Builds (PR)
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-react-tests, frontend-angular-tests]
+    if: github.event_name == 'pull_request' && github.base_ref == 'develop'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Gateway (verify only)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/gateway
+          push: false
+          tags: elibrary/gateway:pr-${{ github.event.pull_request.number }}
+      
+      - name: Build Catalog Service (verify only)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/catalog-service
+          push: false
+          tags: elibrary/catalog-service:pr-${{ github.event.pull_request.number }}
+      
+      - name: Build Auth Service (verify only)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/auth-service
+          push: false
+          tags: elibrary/auth-service:pr-${{ github.event.pull_request.number }}
+      
+      - name: Build Importer Service (verify only)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/importer-service
+          push: false
+          tags: elibrary/importer-service:pr-${{ github.event.pull_request.number }}
+      
+      - name: Build Recommender Service (verify only)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/recommender-service
+          push: false
+          tags: elibrary/recommender-service:pr-${{ github.event.pull_request.number }}
+      
+      - name: Build Analytics Service (verify only)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/analytics-service
+          push: false
+          tags: elibrary/analytics-service:pr-${{ github.event.pull_request.number }}
+
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-react-tests, frontend-angular-tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and push Gateway
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/gateway
+          push: true
+          tags: ghcr.io/${{ github.repository }}/gateway:latest
+      
+      - name: Build and push Catalog Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/catalog-service
+          push: true
+          tags: ghcr.io/${{ github.repository }}/catalog-service:latest
+      
+      - name: Build and push Auth Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/auth-service
+          push: true
+          tags: ghcr.io/${{ github.repository }}/auth-service:latest
+      
+      - name: Build and push Importer Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/importer-service
+          push: true
+          tags: ghcr.io/${{ github.repository }}/importer-service:latest
+      
+      - name: Build and push Recommender Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/recommender-service
+          push: true
+          tags: ghcr.io/${{ github.repository }}/recommender-service:latest
+      
+      - name: Build and push Analytics Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/analytics-service
+          push: true
+          tags: ghcr.io/${{ github.repository }}/analytics-service:latest
+      
+      - name: Build and push React Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend/react
+          push: true
+          tags: ghcr.io/${{ github.repository }}/frontend-react:latest
+      
+      - name: Build and push Angular Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend/angular
+          push: true
+          tags: ghcr.io/${{ github.repository }}/frontend-angular:latest
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+

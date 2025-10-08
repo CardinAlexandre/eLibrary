@@ -1,0 +1,22 @@
+<mat-toolbar color="primary">
+  <mat-icon>menu_book</mat-icon>
+  <span style="margin-left: 10px; cursor: pointer;" routerLink="/">eLibrary</span>
+  <span style="flex: 1;"></span>
+  
+  <button mat-button routerLink="/">Catalogue</button>
+  <button mat-button routerLink="/search">Recherche</button>
+  <button mat-button routerLink="/login">Connexion</button>
+  
+  <button mat-icon-button (click)="toggleTheme()">
+    <mat-icon>{{ (darkMode$ | async) ? 'brightness_7' : 'brightness_4' }}</mat-icon>
+  </button>
+</mat-toolbar>
+
+<main style="min-height: calc(100vh - 128px); padding: 20px;">
+  <ng-content></ng-content>
+</main>
+
+<footer style="background-color: #f5f5f5; padding: 20px; text-align: center;">
+  <p>© 2024 eLibrary - Plateforme de gestion de bibliothèque</p>
+</footer>
+
