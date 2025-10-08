@@ -87,7 +87,7 @@ case "$1" in
         echo "📍 Services disponibles:"
         echo "   - React Frontend:     http://$(hostname -I | awk '{print $1}'):3000"
         echo "   - Angular Frontend:   http://$(hostname -I | awk '{print $1}'):4200"
-        echo "   - API Gateway:        http://$(hostname -I | awk '{print $1}'):5000"
+        echo "   - API Gateway:        http://$(hostname -I | awk '{print $1}'):8080"
         echo "   - RabbitMQ:           http://$(hostname -I | awk '{print $1}'):15672"
         echo "   - Grafana:            http://$(hostname -I | awk '{print $1}'):3001"
         echo "   - Prometheus:         http://$(hostname -I | awk '{print $1}'):9090"

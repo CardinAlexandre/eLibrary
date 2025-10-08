@@ -89,7 +89,7 @@ services:
     container_name: elibrary-gateway
     platform: linux/arm64
     ports:
-      - "5000:80"
+      - "8080:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:80
@@ -218,7 +218,7 @@ services:
     ports:
       - "3000:80"
     environment:
-      - REACT_APP_API_URL=${API_GATEWAY_URL:-http://localhost:5000}
+      - REACT_APP_API_URL=${API_GATEWAY_URL:-http://localhost:8080}
     depends_on:
       gateway:
         condition: service_started
@@ -236,7 +236,7 @@ services:
     ports:
       - "4200:80"
     environment:
-      - NG_API_URL=${API_GATEWAY_URL:-http://localhost:5000}
+      - NG_API_URL=${API_GATEWAY_URL:-http://localhost:8080}
     depends_on:
       gateway:
         condition: service_started
