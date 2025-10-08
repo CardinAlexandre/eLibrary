@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{5854FF58-B8C5-05C6-5BF2-ACE42193F22B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "catalog-service", "services\catalog-service\CatalogService.csproj", "{E7FF3492-96E6-4D84-B8EF-1B37721FC3B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "catalog-service", "services\catalog-service\catalog-service.csproj", "{E7FF3492-96E6-4D84-B8EF-1B37721FC3B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
