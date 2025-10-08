@@ -1,0 +1,55 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.book-details {
+  margin-top: 20px;
+}
+
+.book-content {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.book-image img {
+  max-width: 300px;
+  border-radius: 8px;
+}
+
+.book-info {
+  flex: 1;
+  min-width: 300px;
+}
+
+.rating {
+  margin: 16px 0;
+  font-size: 1.1rem;
+}
+
+.description {
+  margin: 20px 0;
+  line-height: 1.6;
+}
+
+.metadata {
+  margin: 20px 0;
+}
+
+.tags {
+  margin: 20px 0;
+}
+
+.borrow-btn {
+  margin-top: 20px;
+}
+
