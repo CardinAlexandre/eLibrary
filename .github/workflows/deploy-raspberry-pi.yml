@@ -1,0 +1,173 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches:
+      - main
+      - production
+  workflow_dispatch:
+
+env:
+  DOCKER_COMPOSE_FILE: docker-compose.raspberry-pi.yml
+
+jobs:
+  deploy:
+    name: Deploy to Raspberry Pi
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
+
+      - name: Add Raspberry Pi to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.RASPBERRY_PI_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Test SSH connection
+        run: |
+          ssh ${{ secrets.RASPBERRY_PI_USER }}@${{ secrets.RASPBERRY_PI_HOST }} 'echo "✓ SSH connection successful"'
+
+      - name: Create deployment package
+        run: |
+          tar -czf deploy.tar.gz \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='*/bin' \
+            --exclude='*/obj' \
+            --exclude='*.log' \
+            .
+
+      - name: Transfer files to Raspberry Pi
+        run: |
+          scp deploy.tar.gz ${{ secrets.RASPBERRY_PI_USER }}@${{ secrets.RASPBERRY_PI_HOST }}:/tmp/
+
+      - name: Deploy on Raspberry Pi
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          GRAFANA_PASSWORD: ${{ secrets.GRAFANA_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY }}
+        run: |
+          ssh ${{ secrets.RASPBERRY_PI_USER }}@${{ secrets.RASPBERRY_PI_HOST }} << 'ENDSSH'
+            set -e
+            
+            echo "📦 Extracting deployment package..."
+            cd /home/${{ secrets.RASPBERRY_PI_USER }}/eLibrary || mkdir -p /home/${{ secrets.RASPBERRY_PI_USER }}/eLibrary && cd /home/${{ secrets.RASPBERRY_PI_USER }}/eLibrary
+            tar -xzf /tmp/deploy.tar.gz
+            rm /tmp/deploy.tar.gz
+            
+            echo "🔧 Creating .env file..."
+            cat > .env << 'EOF'
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          GOOGLE_BOOKS_API_KEY=${{ secrets.GOOGLE_BOOKS_API_KEY }}
+          REDIS_CONNECTION_STRING=redis:6379
+          RABBITMQ_HOST=rabbitmq
+          RABBITMQ_USER=guest
+          RABBITMQ_PASS=guest
+          JWT_ISSUER=eLibrary-API
+          JWT_AUDIENCE=eLibrary-Clients
+          JWT_EXPIRATION_MINUTES=60
+          ENABLE_RECOMMENDATIONS=true
+          ENABLE_REAL_TIME_NOTIFICATIONS=true
+          ENABLE_GOOGLE_BOOKS_ENRICHMENT=true
+          ENABLE_ADVANCED_ANALYTICS=false
+          EOF
+            
+            echo "🐳 Building Docker images..."
+            docker compose -f ${{ env.DOCKER_COMPOSE_FILE }} build --parallel
+            
+            echo "🚀 Deploying application..."
+            docker compose -f ${{ env.DOCKER_COMPOSE_FILE }} up -d
+            
+            echo "🧹 Cleaning up old images..."
+            docker image prune -f
+            
+            echo "✅ Deployment completed successfully!"
+            
+            echo "📊 Container status:"
+            docker compose -f ${{ env.DOCKER_COMPOSE_FILE }} ps
+          ENDSSH
+
+      - name: Health check
+        run: |
+          sleep 30  # Wait for services to start
+          
+          echo "🏥 Checking service health..."
+          
+          # Check if services are responding
+          GATEWAY_URL="http://${{ secrets.RASPBERRY_PI_HOST }}:5000/health"
+          
+          for i in {1..10}; do
+            if curl -f -s "$GATEWAY_URL" > /dev/null; then
+              echo "✅ Gateway is healthy!"
+              break
+            else
+              echo "⏳ Waiting for gateway... (attempt $i/10)"
+              sleep 10
+            fi
+            
+            if [ $i -eq 10 ]; then
+              echo "❌ Health check failed after 10 attempts"
+              exit 1
+            fi
+          done
+
+      - name: Send deployment notification
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            STATUS="✅ SUCCESS"
+            COLOR="good"
+          else
+            STATUS="❌ FAILED"
+            COLOR="danger"
+          fi
+          
+          echo "$STATUS - Deployment to Raspberry Pi completed"
+          
+          # Vous pouvez ajouter ici une notification Slack/Discord/Email si nécessaire
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f deploy.tar.gz
+
+  # Job optionnel : Rollback en cas d'échec
+  rollback:
+    name: Rollback on failure
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: failure()
+    
+    steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
+
+      - name: Add Raspberry Pi to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.RASPBERRY_PI_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Rollback to previous version
+        run: |
+          ssh ${{ secrets.RASPBERRY_PI_USER }}@${{ secrets.RASPBERRY_PI_HOST }} << 'ENDSSH'
+            cd /home/${{ secrets.RASPBERRY_PI_USER }}/eLibrary
+            
+            echo "🔄 Rolling back to previous version..."
+            git checkout HEAD~1
+            
+            docker compose -f ${{ env.DOCKER_COMPOSE_FILE }} up -d
+            
+            echo "✅ Rollback completed"
+          ENDSSH
+
