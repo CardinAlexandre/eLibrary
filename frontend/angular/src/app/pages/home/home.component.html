@@ -1,0 +1,29 @@
+<div class="container">
+  <h1>Catalogue de livres</h1>
+
+  <div *ngIf="loading$ | async" class="loading-spinner">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="!(loading$ | async)" class="books-grid">
+    <mat-card *ngFor="let book of books$ | async" class="book-card">
+      <img mat-card-image [src]="book.coverUrl || 'https://via.placeholder.com/150x200'" [alt]="book.title">
+      <mat-card-content>
+        <h3>{{ book.title }}</h3>
+        <p class="authors">{{ book.authors.join(', ') }}</p>
+        <mat-chip-set>
+          <mat-chip>{{ book.genre }}</mat-chip>
+        </mat-chip-set>
+        <div class="rating">
+          ⭐ {{ book.averageRating.toFixed(1) }} ({{ book.reviewCount }})
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" [routerLink]="['/books', book.id]">
+          Voir détails
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
+
