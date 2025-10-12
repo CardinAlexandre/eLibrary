@@ -89,6 +89,8 @@ public class GetBooksQueryHandler : IRequestHandler<GetBooksQuery, PagedResult<B
             Description = book.Description,
             CoverUrl = book.CoverUrl,
             IsAvailable = book.IsAvailable,
+            CopiesAvailable = book.CopiesAvailable,
+            TotalCopies = book.TotalCopies,
             AverageRating = book.AverageRating,
             ReviewCount = book.ReviewCount
         };

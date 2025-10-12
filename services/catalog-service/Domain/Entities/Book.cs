@@ -14,6 +14,8 @@ public abstract class Book
     public string Description { get; set; } = string.Empty;
     public string CoverUrl { get; set; } = string.Empty;
     public bool IsAvailable { get; set; } = true;
+    public int CopiesAvailable { get; set; } = 1;
+    public int TotalCopies { get; set; } = 1;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 

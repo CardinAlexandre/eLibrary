@@ -15,6 +15,8 @@ public class BookDto
     public string Description { get; set; } = string.Empty;
     public string CoverUrl { get; set; } = string.Empty;
     public bool IsAvailable { get; set; }
+    public int CopiesAvailable { get; set; }
+    public int TotalCopies { get; set; }
     public double AverageRating { get; set; }
     public int ReviewCount { get; set; }
 

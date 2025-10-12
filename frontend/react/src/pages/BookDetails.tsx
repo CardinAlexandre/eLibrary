@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Typography, Box, CircularProgress, Chip, Rating, Button, Paper } from '@mui/material';
+import { Container, Typography, Box, CircularProgress, Chip, Rating, Button, Paper, Alert } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchBookById, clearCurrentBook } from '../store/slices/booksSlice';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 
 const BookDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -97,7 +98,22 @@ const BookDetails: React.FC = () => {
               </Box>
             </Box>
 
-            {currentBook.isAvailable && (
+            <Alert 
+              icon={<MenuBookIcon />} 
+              severity={currentBook.copiesAvailable > 0 ? 'info' : 'warning'} 
+              sx={{ mt: 3 }}
+            >
+              <Typography variant="body1">
+                <strong>Exemplaires disponibles :</strong> {currentBook.copiesAvailable} / {currentBook.totalCopies}
+              </Typography>
+              {currentBook.copiesAvailable === 0 && (
+                <Typography variant="body2" color="warning.main">
+                  Tous les exemplaires sont actuellement empruntés
+                </Typography>
+              )}
+            </Alert>
+
+            {currentBook.isAvailable && currentBook.copiesAvailable > 0 && (
               <Button variant="contained" size="large" sx={{ mt: 3 }}>
                 Emprunter ce livre
               </Button>
