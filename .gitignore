@@ -416,3 +416,27 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Angular build and cache files
+**/frontend/angular/.angular/
+**/frontend/angular/dist/
+**/frontend/angular/.cache/
+**/frontend/angular/coverage/
+**/frontend/angular/.nyc_output/
+
+# React build and cache files
+**/frontend/react/build/
+**/frontend/react/.cache/
+**/frontend/react/coverage/
+**/frontend/react/.nyc_output/
+
+# Node.js dependencies (already covered above but being explicit)
+**/node_modules/
+**/package-lock.json
+
+# TypeScript cache
+*.tsbuildinfo
+
+# IDE and editor files
+**/.idea/
+**/.angular/
