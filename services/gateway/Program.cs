@@ -7,7 +7,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
@@ -16,7 +15,6 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -36,14 +34,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// WebSocket Notification Service
 builder.Services.AddSingleton<WebSocketNotificationService>();
 
-// YARP Reverse Proxy
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -58,7 +53,6 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-// Enable WebSocket support
 app.UseWebSockets(new WebSocketOptions
 {
     KeepAliveInterval = TimeSpan.FromSeconds(120)
@@ -70,7 +64,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseHttpMetrics();
 
-// WebSocket endpoint for real-time notifications
 app.Map("/ws", async context =>
 {
     var notificationService = context.RequestServices.GetRequiredService<WebSocketNotificationService>();
@@ -78,7 +71,6 @@ app.Map("/ws", async context =>
     await notificationService.HandleWebSocketAsync(context, connectionId);
 });
 
-// Test endpoint to send notifications
 app.MapPost("/api/notifications/send", async (WebSocketNotificationService service, NotificationRequest request) =>
 {
     await service.BroadcastAsync(new

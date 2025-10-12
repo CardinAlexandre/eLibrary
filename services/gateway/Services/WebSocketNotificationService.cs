@@ -61,7 +61,6 @@ public class WebSocketNotificationService
                 var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 _logger.LogInformation("Received message from {ConnectionId}: {Message}", connectionId, message);
 
-                // Echo back or handle ping/pong
                 if (message == "ping")
                 {
                     await SendMessageAsync(connectionId, "pong");
@@ -98,8 +97,6 @@ public class WebSocketNotificationService
         var message = JsonSerializer.Serialize(notification);
         var buffer = Encoding.UTF8.GetBytes(message);
 
-        // Dans une vraie implémentation, on maintiendrait un mapping userId -> connectionId
-        // Pour la démo, on broadcast à tous
         var tasks = _connections.Values
             .Where(ws => ws.State == WebSocketState.Open)
             .Select(ws => ws.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None));
