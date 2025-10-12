@@ -1,10 +1,13 @@
 using AuthService.Data;
 using AuthService.Models;
 using AuthService.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Prometheus;
 using Serilog;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +37,47 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
 })
 .AddEntityFrameworkStores<AuthDbContext>()
 .AddDefaultTokenProviders();
+
+// JWT Authentication
+var jwtSecret = builder.Configuration["JwtSettings:Secret"] ?? throw new InvalidOperationException("JWT Secret is not configured");
+var jwtIssuer = builder.Configuration["JwtSettings:Issuer"] ?? "eLibrary";
+var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? "eLibrary-Clients";
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.SaveToken = true;
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+        ClockSkew = TimeSpan.Zero
+    };
+    
+    // Disable automatic redirect to login page
+    options.Events = new JwtBearerEvents
+    {
+        OnChallenge = context =>
+        {
+            context.HandleResponse();
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.ContentType = "application/json";
+            var result = System.Text.Json.JsonSerializer.Serialize(new { message = "Unauthorized" });
+            return context.Response.WriteAsync(result);
+        }
+    };
+});
 
 // Services
 builder.Services.AddScoped<IJwtService, JwtService>();
