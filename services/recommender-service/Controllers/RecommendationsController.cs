@@ -16,9 +16,6 @@ public class RecommendationsController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Obtenir des recommandations personnalisées pour un utilisateur
-    /// </summary>
     [HttpGet("{userId}")]
     public async Task<IActionResult> GetRecommendations(Guid userId, [FromQuery] int limit = 10)
     {
@@ -29,9 +26,6 @@ public class RecommendationsController : ControllerBase
         return Ok(recommendations);
     }
 
-    /// <summary>
-    /// Obtenir des livres similaires à un livre donné
-    /// </summary>
     [HttpGet("similar/{bookId}")]
     public async Task<IActionResult> GetSimilarBooks(Guid bookId, [FromQuery] int limit = 5)
     {

@@ -8,7 +8,7 @@ public class RecommendationDto
     public string Genre { get; set; } = string.Empty;
     public List<string> Tags { get; set; } = new();
     public string CoverUrl { get; set; } = string.Empty;
-    public double Score { get; set; } // 0.0 - 1.0
+    public double Score { get; set; }
     public string Reason { get; set; } = string.Empty;
     public double AverageRating { get; set; }
 }

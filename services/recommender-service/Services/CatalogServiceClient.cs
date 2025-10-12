@@ -16,7 +16,6 @@ public class CatalogServiceClient
         _httpClient.BaseAddress = new Uri(baseUrl);
     }
 
-    // Constructor for testing/mocking
     protected CatalogServiceClient()
     {
         _httpClient = null!;

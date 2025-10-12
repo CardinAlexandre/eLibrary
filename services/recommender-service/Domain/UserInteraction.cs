@@ -7,8 +7,8 @@ public class UserInteraction
     public Guid BookId { get; set; }
     public InteractionType InteractionType { get; set; }
     public DateTime InteractionDate { get; set; } = DateTime.UtcNow;
-    public int? Rating { get; set; } // 1-5 pour les reviews
-    public string? Tags { get; set; } // JSON array des tags du livre
+    public int? Rating { get; set; }
+    public string? Tags { get; set; }
     public string? Genre { get; set; }
     public string? Language { get; set; }
 }
