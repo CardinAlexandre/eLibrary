@@ -1,6 +1,7 @@
 using CatalogService.DTOs;
 using CatalogService.Features.Books.Commands;
 using CatalogService.Features.Books.Queries;
+using CatalogService.Seeders;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,13 @@ public class BooksController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILogger<BooksController> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
-    public BooksController(IMediator mediator, ILogger<BooksController> logger)
+    public BooksController(IMediator mediator, ILogger<BooksController> logger, IServiceProvider serviceProvider)
     {
         _mediator = mediator;
         _logger = logger;
+        _serviceProvider = serviceProvider;
     }
 
     [HttpGet]
@@ -70,6 +73,43 @@ public class BooksController : ControllerBase
         _logger.LogInformation("Creating new book: {Title}", bookDto.Title);
         var result = await _mediator.Send(new CreateBookCommand(bookDto));
         return CreatedAtAction(nameof(GetBookById), new { id = result.Id }, result);
+    }
+
+    [HttpPost("seed")]
+    [Authorize(Roles = "Admin,Librarian")]
+    public async Task<ActionResult> SeedDatabase()
+    {
+        try
+        {
+            _logger.LogInformation("Starting database seed...");
+            var seeder = new DatabaseSeeder(_serviceProvider);
+            await seeder.SeedAsync();
+            _logger.LogInformation("Database seeded successfully");
+            return Ok(new { message = "Database seeded successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error seeding database");
+            return StatusCode(500, new { message = "Error seeding database", error = ex.Message });
+        }
+    }
+
+    [HttpDelete("clear")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> ClearAllBooks()
+    {
+        try
+        {
+            _logger.LogInformation("Clearing all books from database...");
+            var result = await _mediator.Send(new ClearBooksCommand());
+            _logger.LogInformation("All books cleared successfully");
+            return Ok(new { message = $"Deleted {result} books successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error clearing books");
+            return StatusCode(500, new { message = "Error clearing books", error = ex.Message });
+        }
     }
 }
 
