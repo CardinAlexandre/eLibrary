@@ -36,14 +36,12 @@ public class ImportController : ControllerBase
         {
             try
             {
-                // Try to enrich from Google Books API
                 if (!string.IsNullOrEmpty(book.Isbn))
                 {
                     var enrichmentData = await _googleBooksService.EnrichBookDataAsync(book.Isbn);
 
                     if (enrichmentData != null)
                     {
-                        // Merge enriched data with original
                         book.Description = string.IsNullOrEmpty(book.Description) ? enrichmentData.Description : book.Description;
                         book.CoverUrl = string.IsNullOrEmpty(book.CoverUrl) ? enrichmentData.ImageUrl : book.CoverUrl;
 
@@ -62,7 +60,6 @@ public class ImportController : ControllerBase
                     }
                 }
 
-                // Send to catalog service
                 var success = await _catalogService.CreateBookAsync(book);
 
                 if (success)
