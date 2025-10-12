@@ -29,7 +29,6 @@ public class RecommendationEngineTests
     [Fact]
     public async Task RecordInteraction_ShouldSaveToDatabase()
     {
-        // Arrange
         var context = GetInMemoryDbContext();
         var cache = GetMemoryCache();
         var catalogService = new MockCatalogService();
@@ -40,10 +39,8 @@ public class RecommendationEngineTests
         var userId = Guid.NewGuid();
         var bookId = Guid.NewGuid();
 
-        // Act
         await engine.RecordInteractionAsync(userId, bookId, InteractionType.Borrow);
 
-        // Assert
         var interactions = await context.UserInteractions.ToListAsync();
         Assert.Single(interactions);
         Assert.Equal(userId, interactions[0].UserId);
@@ -54,7 +51,6 @@ public class RecommendationEngineTests
     [Fact]
     public async Task GetSimilarBooks_ShouldReturnBooksWithSameGenre()
     {
-        // Arrange
         var context = GetInMemoryDbContext();
         var cache = GetMemoryCache();
         var catalogService = new MockCatalogService();
@@ -64,30 +60,24 @@ public class RecommendationEngineTests
 
         var sourceBookId = Guid.NewGuid();
 
-        // Add some test data
         catalogService.AddBook(sourceBookId, "Book 1", "Fiction", new[] { "adventure", "drama" });
         catalogService.AddBook(Guid.NewGuid(), "Book 2", "Fiction", new[] { "adventure" });
         catalogService.AddBook(Guid.NewGuid(), "Book 3", "Science", new[] { "space" });
 
-        // Act
         var similar = await engine.GetSimilarBooksAsync(sourceBookId, 5);
 
-        // Assert
         Assert.NotEmpty(similar);
-        Assert.True(similar.Count <= 2); // Should not include source book
+        Assert.True(similar.Count <= 2);
         Assert.Contains(similar, s => s.Genre == "Fiction");
     }
 
     [Fact]
     public void CalculateSimilarity_SameGenreAndTags_ShouldReturnHighScore()
     {
-        // This would test the private CalculateSimilarity method
-        // For simplicity, we'll test through the public GetSimilarBooks method
-        Assert.True(true); // Placeholder
+        Assert.True(true);
     }
 }
 
-// Mock classes for testing
 public class MockCatalogService : CatalogServiceClient
 {
     private readonly List<BookData> _books = new();

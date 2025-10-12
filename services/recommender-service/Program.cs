@@ -6,7 +6,6 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
@@ -16,17 +15,14 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Database
 builder.Services.AddDbContext<RecommenderDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Redis Cache
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
 });
 
-// Services
 builder.Services.AddHttpClient<CatalogServiceClient>();
 builder.Services.AddScoped<RecommendationEngine>();
 builder.Services.AddSingleton<RabbitMQConsumer>();
@@ -68,7 +64,6 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapMetrics();
 
-// Database Migration
 using (var scope = app.Services.CreateScope())
 {
     try

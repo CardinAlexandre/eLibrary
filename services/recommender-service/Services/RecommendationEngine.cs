@@ -38,22 +38,18 @@ public class RecommendationEngine
 
         var recommendations = new List<RecommendationDto>();
 
-        // 1. Content-based recommendations (basé sur l'historique de l'utilisateur)
         var contentBased = await GetContentBasedRecommendationsAsync(userId, limit);
         recommendations.AddRange(contentBased);
 
-        // 2. Collaborative filtering (basé sur les utilisateurs similaires)
         var collaborative = await GetCollaborativeRecommendationsAsync(userId, limit);
         recommendations.AddRange(collaborative);
 
-        // 3. Popular books (fallback si pas assez d'historique)
         if (recommendations.Count < limit)
         {
             var popular = await GetPopularBooksAsync(limit - recommendations.Count);
             recommendations.AddRange(popular);
         }
 
-        // Dédupliquer et trier par score
         var uniqueRecommendations = recommendations
             .GroupBy(r => r.BookId)
             .Select(g => g.OrderByDescending(r => r.Score).First())
@@ -61,7 +57,6 @@ public class RecommendationEngine
             .Take(limit)
             .ToList();
 
-        // Cache pour 10 minutes
         await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(uniqueRecommendations),
             new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10) });
 
@@ -78,7 +73,6 @@ public class RecommendationEngine
             return JsonSerializer.Deserialize<List<SimilarBookDto>>(cached) ?? new();
         }
 
-        // Récupérer depuis la base de données
         var similarities = await _context.BookSimilarities
             .Where(s => s.BookId == bookId)
             .OrderByDescending(s => s.SimilarityScore)
@@ -104,7 +98,6 @@ public class RecommendationEngine
             }
         }
 
-        // Si pas de similarités pré-calculées, calculer en temps réel
         if (similarBooks.Count == 0)
         {
             similarBooks = await CalculateSimilarBooksRealTimeAsync(bookId, limit);
@@ -118,7 +111,6 @@ public class RecommendationEngine
 
     private async Task<List<RecommendationDto>> GetContentBasedRecommendationsAsync(Guid userId, int limit)
     {
-        // Récupérer l'historique de l'utilisateur
         var userInteractions = await _context.UserInteractions
             .Where(i => i.UserId == userId)
             .OrderByDescending(i => i.InteractionDate)
@@ -130,7 +122,6 @@ public class RecommendationEngine
             return new List<RecommendationDto>();
         }
 
-        // Analyser les préférences (genres, tags)
         var preferredGenres = userInteractions
             .Where(i => i.Genre != null)
             .GroupBy(i => i.Genre)
@@ -139,18 +130,15 @@ public class RecommendationEngine
             .Take(3)
             .ToList();
 
-        // Récupérer tous les livres du catalogue
         var allBooks = await _catalogService.GetAllBooksAsync();
         if (allBooks == null)
         {
             return new List<RecommendationDto>();
         }
 
-        // Exclure les livres déjà vus
         var seenBookIds = userInteractions.Select(i => i.BookId).ToHashSet();
         var candidateBooks = allBooks.Where(b => !seenBookIds.Contains(b.Id)).ToList();
 
-        // Scorer chaque livre
         var recommendations = candidateBooks
             .Select(book => new RecommendationDto
             {
@@ -175,13 +163,11 @@ public class RecommendationEngine
     {
         double score = 0.0;
 
-        // Genre match (poids: 0.4)
         if (preferredGenres.Contains(book.Genre))
         {
             score += 0.4;
         }
 
-        // Tags match (poids: 0.3)
         var userTags = history
             .Where(i => i.Tags != null)
             .SelectMany(i => JsonSerializer.Deserialize<List<string>>(i.Tags!) ?? new())
@@ -194,10 +180,8 @@ public class RecommendationEngine
         var commonTags = book.Tags.Count(t => userTags.Contains(t));
         score += (commonTags / (double)Math.Max(book.Tags.Count, 1)) * 0.3;
 
-        // Rating (poids: 0.2)
         score += (book.AverageRating / 5.0) * 0.2;
 
-        // Popularité (poids: 0.1)
         score += Math.Min(book.ReviewCount / 100.0, 1.0) * 0.1;
 
         return Math.Min(score, 1.0);
@@ -205,7 +189,6 @@ public class RecommendationEngine
 
     private async Task<List<RecommendationDto>> GetCollaborativeRecommendationsAsync(Guid userId, int limit)
     {
-        // Trouver des utilisateurs similaires (qui ont emprunté des livres similaires)
         var userBooks = await _context.UserInteractions
             .Where(i => i.UserId == userId && i.InteractionType == InteractionType.Borrow)
             .Select(i => i.BookId)
@@ -216,7 +199,6 @@ public class RecommendationEngine
             return new List<RecommendationDto>();
         }
 
-        // Trouver d'autres utilisateurs qui ont emprunté ces mêmes livres
         var similarUserIds = await _context.UserInteractions
             .Where(i => userBooks.Contains(i.BookId) && i.UserId != userId)
             .GroupBy(i => i.UserId)
@@ -225,7 +207,6 @@ public class RecommendationEngine
             .Select(g => g.Key)
             .ToListAsync();
 
-        // Récupérer les livres que ces utilisateurs ont aimés mais que l'utilisateur actuel n'a pas vus
         var recommendations = await _context.UserInteractions
             .Where(i => similarUserIds.Contains(i.UserId) && !userBooks.Contains(i.BookId))
             .GroupBy(i => i.BookId)
@@ -328,26 +309,22 @@ public class RecommendationEngine
     {
         double score = 0.0;
 
-        // Même genre (poids: 0.4)
         if (book1.Genre == book2.Genre)
         {
             score += 0.4;
         }
 
-        // Tags communs (poids: 0.4)
         var commonTags = book1.Tags.Intersect(book2.Tags).Count();
         if (book1.Tags.Any() && book2.Tags.Any())
         {
             score += (commonTags / (double)Math.Max(book1.Tags.Count, book2.Tags.Count)) * 0.4;
         }
 
-        // Même langue (poids: 0.1)
         if (book1.Language == book2.Language)
         {
             score += 0.1;
         }
 
-        // Auteurs communs (poids: 0.1)
         var commonAuthors = book1.Authors.Intersect(book2.Authors).Count();
         if (commonAuthors > 0)
         {
@@ -400,7 +377,6 @@ public class RecommendationEngine
         _context.UserInteractions.Add(interaction);
         await _context.SaveChangesAsync();
 
-        // Invalider le cache des recommandations pour cet utilisateur
         await _cache.RemoveAsync($"recommendations:{userId}:10");
 
         _logger.LogInformation("Recorded interaction: User {UserId}, Book {BookId}, Type {Type}",
