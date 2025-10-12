@@ -17,6 +17,8 @@ interface Book {
   description: string;
   coverUrl: string;
   isAvailable: boolean;
+  copiesAvailable: number;
+  totalCopies: number;
   averageRating: number;
   reviewCount: number;
   typeSpecificData: Record<string, any>;

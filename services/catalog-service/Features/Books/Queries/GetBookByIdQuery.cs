@@ -51,6 +51,8 @@ public class GetBookByIdQueryHandler : IRequestHandler<GetBookByIdQuery, BookDto
             Description = book.Description,
             CoverUrl = book.CoverUrl,
             IsAvailable = book.IsAvailable,
+            CopiesAvailable = book.CopiesAvailable,
+            TotalCopies = book.TotalCopies,
             AverageRating = book.AverageRating,
             ReviewCount = book.ReviewCount
         };
