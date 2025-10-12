@@ -31,10 +31,43 @@ interface RegisterData {
   lastName: string;
 }
 
+// Helper function to decode JWT token
+const decodeToken = (token: string): User | null => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    const payload = JSON.parse(jsonPayload);
+    
+    // Extract user info from token
+    return {
+      userId: payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || payload.sub || payload.userId,
+      email: payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email,
+      firstName: payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'] || payload.firstName || '',
+      lastName: payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'] || payload.lastName || '',
+      roles: Array.isArray(payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']) 
+        ? payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+        : [payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'Member']
+    };
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
+};
+
+// Initialize user from token if available
+const storedToken = localStorage.getItem('token');
+const initialUser = storedToken ? decodeToken(storedToken) : null;
+
 const initialState: AuthState = {
-  user: null,
-  token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
+  user: initialUser,
+  token: storedToken,
+  isAuthenticated: !!storedToken && !!initialUser,
   loading: false,
   error: null,
 };
@@ -74,6 +107,16 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       localStorage.removeItem('token');
+    },
+    updateUser: (state, action) => {
+      state.token = action.payload.token;
+      state.user = {
+        userId: action.payload.userId,
+        email: action.payload.email,
+        firstName: action.payload.firstName,
+        lastName: action.payload.lastName,
+        roles: action.payload.roles,
+      };
     },
   },
   extraReducers: (builder) => {
@@ -121,6 +164,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, updateUser } = authSlice.actions;
 export default authSlice.reducer;
 

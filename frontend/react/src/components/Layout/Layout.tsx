@@ -7,6 +7,7 @@ import { toggleDarkMode } from '../../store/slices/themeSlice';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -54,6 +55,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </Button>
                 </>
               )}
+              <Button 
+                color="inherit" 
+                component={Link} 
+                to="/profile"
+                startIcon={<AccountCircleIcon />}
+              >
+                Profil
+              </Button>
               <Button color="inherit" onClick={handleLogout}>
                 Déconnexion
               </Button>

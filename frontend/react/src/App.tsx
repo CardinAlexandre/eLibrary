@@ -12,6 +12,7 @@ import Loans from './pages/Loans';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
 import PrivateRoute from './components/Auth/PrivateRoute';
 
 function App() {
@@ -57,6 +58,12 @@ function App() {
             <Route path="/dashboard" element={
               <PrivateRoute requiredRole="Admin,Librarian">
                 <Dashboard />
+              </PrivateRoute>
+            } />
+            
+            <Route path="/profile" element={
+              <PrivateRoute>
+                <Profile />
               </PrivateRoute>
             } />
             

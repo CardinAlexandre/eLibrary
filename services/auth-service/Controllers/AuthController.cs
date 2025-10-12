@@ -1,8 +1,10 @@
 using AuthService.DTOs;
 using AuthService.Models;
 using AuthService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AuthService.Controllers;
 
@@ -115,6 +117,190 @@ public class AuthController : ControllerBase
         }
 
         var roles = await _userManager.GetRolesAsync(user);
+        var token = _jwtService.GenerateToken(user, roles);
+        var refreshToken = _jwtService.GenerateRefreshToken();
+
+        return Ok(new AuthResponseDto
+        {
+            Token = token,
+            RefreshToken = refreshToken,
+            UserId = user.Id,
+            Email = user.Email ?? "",
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Roles = roles.ToList()
+        });
+    }
+
+    [Authorize]
+    [HttpGet("profile")]
+    public async Task<ActionResult<UserProfileDto>> GetProfile()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return Ok(new UserProfileDto
+        {
+            UserId = user.Id,
+            Email = user.Email ?? "",
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Roles = roles.ToList(),
+            CreatedAt = user.CreatedAt,
+            LastLoginAt = user.LastLoginAt,
+            IsActive = user.IsActive
+        });
+    }
+
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<ActionResult<UserProfileDto>> UpdateProfile([FromBody] UpdateProfileDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        user.FirstName = dto.FirstName;
+        user.LastName = dto.LastName;
+
+        // Update email if changed
+        if (dto.Email != user.Email)
+        {
+            var setEmailResult = await _userManager.SetEmailAsync(user, dto.Email);
+            if (!setEmailResult.Succeeded)
+            {
+                return BadRequest(new { errors = setEmailResult.Errors.Select(e => e.Description) });
+            }
+            await _userManager.SetUserNameAsync(user, dto.Email);
+        }
+
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
+        }
+
+        // Update password if provided
+        if (!string.IsNullOrEmpty(dto.NewPassword))
+        {
+            if (string.IsNullOrEmpty(dto.CurrentPassword))
+            {
+                return BadRequest(new { message = "Current password is required to change password" });
+            }
+
+            var passwordResult = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            if (!passwordResult.Succeeded)
+            {
+                return BadRequest(new { errors = passwordResult.Errors.Select(e => e.Description) });
+            }
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+
+        _logger.LogInformation("User profile updated: {UserId}", userId);
+
+        return Ok(new UserProfileDto
+        {
+            UserId = user.Id,
+            Email = user.Email ?? "",
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Roles = roles.ToList(),
+            CreatedAt = user.CreatedAt,
+            LastLoginAt = user.LastLoginAt,
+            IsActive = user.IsActive
+        });
+    }
+
+    [Authorize]
+    [HttpPost("promote-admin")]
+    public async Task<ActionResult<AuthResponseDto>> PromoteToAdmin()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+        
+        if (!roles.Contains("Admin"))
+        {
+            await _userManager.AddToRoleAsync(user, "Admin");
+            roles = await _userManager.GetRolesAsync(user);
+            
+            _logger.LogInformation("User promoted to Admin: {UserId}", userId);
+        }
+
+        // Generate new token with updated roles
+        var token = _jwtService.GenerateToken(user, roles);
+        var refreshToken = _jwtService.GenerateRefreshToken();
+
+        return Ok(new AuthResponseDto
+        {
+            Token = token,
+            RefreshToken = refreshToken,
+            UserId = user.Id,
+            Email = user.Email ?? "",
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Roles = roles.ToList()
+        });
+    }
+
+    [Authorize]
+    [HttpPost("remove-admin")]
+    public async Task<ActionResult<AuthResponseDto>> RemoveAdminRole()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+        
+        if (roles.Contains("Admin"))
+        {
+            await _userManager.RemoveFromRoleAsync(user, "Admin");
+            roles = await _userManager.GetRolesAsync(user);
+            
+            _logger.LogInformation("Admin role removed from user: {UserId}", userId);
+        }
+
+        // Generate new token with updated roles
         var token = _jwtService.GenerateToken(user, roles);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
