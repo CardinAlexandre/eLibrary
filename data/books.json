@@ -13,7 +13,9 @@
     "description": "Une fresque sociale de la France du XIXe siècle",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782070366854-L.jpg",
     "publisher": "Gallimard",
-    "edition": "Édition intégrale"
+    "edition": "Édition intégrale",
+    "copiesAvailable": 5,
+    "totalCopies": 5
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440002",
@@ -30,7 +32,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780452284234-L.jpg",
     "format": "EPUB",
     "fileSize": 2048,
-    "drm": true
+    "drm": true,
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440003",
@@ -46,7 +50,9 @@
     "description": "Un conte philosophique et poétique",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782070612758-L.jpg",
     "publisher": "Gallimard",
-    "edition": "Édition collector"
+    "edition": "Édition collector",
+    "copiesAvailable": 2,
+    "totalCopies": 2
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440004",
@@ -63,7 +69,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782070541201-L.jpg",
     "duration": 540,
     "narrator": "Bernard Giraudeau",
-    "audioFormat": "MP3"
+    "audioFormat": "MP3",
+    "copiesAvailable": 1,
+    "totalCopies": 1
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440005",
@@ -79,7 +87,9 @@
     "description": "Un roman existentialiste majeur",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782070360024-L.jpg",
     "publisher": "Gallimard",
-    "edition": "Folio"
+    "edition": "Folio",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440006",
@@ -96,7 +106,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780132350884-L.jpg",
     "format": "PDF",
     "fileSize": 5120,
-    "drm": false
+    "drm": false,
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440007",
@@ -112,7 +124,9 @@
     "description": "L'histoire de l'humanité de la préhistoire à nos jours",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782226257017-L.jpg",
     "publisher": "Albin Michel",
-    "edition": "Pocket"
+    "edition": "Pocket",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440008",
@@ -129,7 +143,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780135957059-L.jpg",
     "format": "EPUB",
     "fileSize": 3072,
-    "drm": false
+    "drm": false,
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440009",
@@ -146,7 +162,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782266154109-L.jpg",
     "duration": 1140,
     "narrator": "Dominique Pinon",
-    "audioFormat": "MP3"
+    "audioFormat": "MP3",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440010",
@@ -162,7 +180,9 @@
     "description": "Elements of Reusable Object-Oriented Software",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780201633610-L.jpg",
     "publisher": "Addison-Wesley",
-    "edition": "1st Edition"
+    "edition": "1st Edition",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440011",
@@ -178,7 +198,9 @@
     "description": "Un conte philosophique sur la quête de soi",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782290318324-L.jpg",
     "publisher": "J'ai Lu",
-    "edition": "Poche"
+    "edition": "Poche",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440012",
@@ -195,7 +217,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780321125217-L.jpg",
     "format": "PDF",
     "fileSize": 8192,
-    "drm": false
+    "drm": false,
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440013",
@@ -212,7 +236,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg",
     "duration": 330,
     "narrator": "James Clear",
-    "audioFormat": "MP3"
+    "audioFormat": "MP3",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440014",
@@ -228,7 +254,9 @@
     "description": "Un chef-d'œuvre de la littérature d'aventure",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782253098119-L.jpg",
     "publisher": "Le Livre de Poche",
-    "edition": "Intégrale"
+    "edition": "Intégrale",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440015",
@@ -245,7 +273,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9781617294242-L.jpg",
     "format": "EPUB",
     "fileSize": 6144,
-    "drm": false
+    "drm": false,
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440016",
@@ -261,7 +291,9 @@
     "description": "A romantic novel of manners",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780141439518-L.jpg",
     "publisher": "Penguin Classics",
-    "edition": "Deluxe"
+    "edition": "Deluxe",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440017",
@@ -278,7 +310,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780374533557-L.jpg",
     "duration": 1260,
     "narrator": "Patrick Egan",
-    "audioFormat": "MP3"
+    "audioFormat": "MP3",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440018",
@@ -294,7 +328,9 @@
     "description": "Un roman réaliste et psychologique",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782253006220-L.jpg",
     "publisher": "Le Livre de Poche",
-    "edition": "Classique"
+    "edition": "Classique",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440019",
@@ -311,7 +347,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9781492034025-L.jpg",
     "format": "EPUB",
     "fileSize": 7168,
-    "drm": false
+    "drm": false,
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440020",
@@ -327,7 +365,9 @@
     "description": "A gripping tale of racial injustice",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780061120084-L.jpg",
     "publisher": "Harper Perennial",
-    "edition": "Modern Classics"
+    "edition": "Modern Classics",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440021",
@@ -344,7 +384,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780399590504-L.jpg",
     "duration": 732,
     "narrator": "Julia Whelan",
-    "audioFormat": "MP3"
+    "audioFormat": "MP3",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440022",
@@ -360,7 +402,9 @@
     "description": "Un portrait saisissant de la vie provinciale",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782253006565-L.jpg",
     "publisher": "Le Livre de Poche",
-    "edition": "Classique"
+    "edition": "Classique",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440023",
@@ -377,7 +421,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9781942788003-L.jpg",
     "format": "PDF",
     "fileSize": 4096,
-    "drm": false
+    "drm": false,
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440024",
@@ -393,7 +439,9 @@
     "description": "The story of the mysteriously wealthy Jay Gatsby",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780743273565-L.jpg",
     "publisher": "Scribner",
-    "edition": "Reissue"
+    "edition": "Reissue",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440025",
@@ -410,7 +458,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9781524763138-L.jpg",
     "duration": 1140,
     "narrator": "Michelle Obama",
-    "audioFormat": "MP3"
+    "audioFormat": "MP3",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440026",
@@ -426,7 +476,9 @@
     "description": "Un roman naturaliste sur les mineurs du Nord",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782253004295-L.jpg",
     "publisher": "Le Livre de Poche",
-    "edition": "Classique"
+    "edition": "Classique",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440027",
@@ -443,7 +495,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780134757599-L.jpg",
     "format": "EPUB",
     "fileSize": 5632,
-    "drm": false
+    "drm": false,
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440028",
@@ -459,7 +513,9 @@
     "description": "A dystopian vision of a technologically advanced future",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780060850524-L.jpg",
     "publisher": "Harper Perennial",
-    "edition": "Modern Classics"
+    "edition": "Modern Classics",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440029",
@@ -476,7 +532,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9781982137205-L.jpg",
     "duration": 900,
     "narrator": "Stephen R. Covey",
-    "audioFormat": "MP3"
+    "audioFormat": "MP3",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440030",
@@ -492,7 +550,9 @@
     "description": "Un conte philosophique satirique",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782253003366-L.jpg",
     "publisher": "Le Livre de Poche",
-    "edition": "Classique"
+    "edition": "Classique",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440031",
@@ -509,7 +569,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780321601919-L.jpg",
     "format": "PDF",
     "fileSize": 9216,
-    "drm": false
+    "drm": false,
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440032",
@@ -525,7 +587,9 @@
     "description": "The multi-generational story of the Buendía family",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780060883287-L.jpg",
     "publisher": "Harper Perennial",
-    "edition": "Modern Classics"
+    "edition": "Modern Classics",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440033",
@@ -542,7 +606,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780441172719-L.jpg",
     "duration": 1260,
     "narrator": "Scott Brick",
-    "audioFormat": "MP3"
+    "audioFormat": "MP3",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440034",
@@ -558,7 +624,9 @@
     "description": "Un recueil de poèmes majeur",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782253005193-L.jpg",
     "publisher": "Le Livre de Poche",
-    "edition": "Classique"
+    "edition": "Classique",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440035",
@@ -575,7 +643,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9781492078005-L.jpg",
     "format": "EPUB",
     "fileSize": 10240,
-    "drm": false
+    "drm": false,
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440036",
@@ -591,7 +661,9 @@
     "description": "The story of teenage rebellion and angst",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780316769488-L.jpg",
     "publisher": "Little, Brown and Company",
-    "edition": "Paperback"
+    "edition": "Paperback",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440037",
@@ -608,7 +680,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9781451648539-L.jpg",
     "duration": 1560,
     "narrator": "Dylan Baker",
-    "audioFormat": "MP3"
+    "audioFormat": "MP3",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440038",
@@ -624,7 +698,9 @@
     "description": "Un roman gothique se déroulant au Moyen Âge",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782253002093-L.jpg",
     "publisher": "Le Livre de Poche",
-    "edition": "Classique"
+    "edition": "Classique",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440039",
@@ -641,7 +717,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780321146533-L.jpg",
     "format": "PDF",
     "fileSize": 2560,
-    "drm": false
+    "drm": false,
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440040",
@@ -657,7 +735,9 @@
     "description": "There and Back Again",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780547928227-L.jpg",
     "publisher": "Houghton Mifflin Harcourt",
-    "edition": "75th Anniversary"
+    "edition": "75th Anniversary",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440041",
@@ -674,7 +754,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780807014271-L.jpg",
     "duration": 270,
     "narrator": "Simon Vance",
-    "audioFormat": "MP3"
+    "audioFormat": "MP3",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440042",
@@ -690,7 +772,9 @@
     "description": "Un roman réaliste de la Comédie humaine",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782253001522-L.jpg",
     "publisher": "Le Livre de Poche",
-    "edition": "Classique"
+    "edition": "Classique",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440043",
@@ -707,7 +791,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9781491929124-L.jpg",
     "format": "PDF",
     "fileSize": 11264,
-    "drm": false
+    "drm": false,
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440044",
@@ -724,7 +810,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780544003415-L.jpg",
     "duration": 1020,
     "narrator": "Rob Inglis",
-    "audioFormat": "MP3"
+    "audioFormat": "MP3",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440045",
@@ -740,7 +828,9 @@
     "description": "A satirical allegorical novella",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780452284241-L.jpg",
     "publisher": "Plume",
-    "edition": "Centennial Edition"
+    "edition": "Centennial Edition",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440046",
@@ -757,7 +847,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780316017923-L.jpg",
     "duration": 420,
     "narrator": "Malcolm Gladwell",
-    "audioFormat": "MP3"
+    "audioFormat": "MP3",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440047",
@@ -773,7 +865,9 @@
     "description": "Une comédie héroïque en cinq actes",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782253005384-L.jpg",
     "publisher": "Le Livre de Poche",
-    "edition": "Théâtre"
+    "edition": "Théâtre",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440048",
@@ -790,7 +884,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9781617293726-L.jpg",
     "format": "EPUB",
     "fileSize": 8704,
-    "drm": false
+    "drm": false,
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440049",
@@ -806,7 +902,9 @@
     "description": "Four adventurous siblings step through a wardrobe door",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780060764425-L.jpg",
     "publisher": "HarperCollins",
-    "edition": "Illustrated"
+    "edition": "Illustrated",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440050",
@@ -823,7 +921,9 @@
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780062464293-L.jpg",
     "duration": 900,
     "narrator": "Derek Perkins",
-    "audioFormat": "MP3"
+    "audioFormat": "MP3",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440051",
@@ -839,7 +939,9 @@
     "description": "Les aventures de d'Artagnan et ses compagnons",
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9782253006114-L.jpg",
     "publisher": "Le Livre de Poche",
-    "edition": "Classique"
+    "edition": "Classique",
+    "copiesAvailable": 10,
+    "totalCopies": 10
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440052",

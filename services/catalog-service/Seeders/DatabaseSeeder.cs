@@ -1,6 +1,7 @@
 using CatalogService.Data;
 using CatalogService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using System.Text.Json;
 
 namespace CatalogService.Seeders;
@@ -8,11 +9,13 @@ namespace CatalogService.Seeders;
 public class DatabaseSeeder
 {
     private readonly CatalogDbContext _context;
+    private readonly IConnectionMultiplexer _redis;
     private readonly ILogger<DatabaseSeeder> _logger;
 
     public DatabaseSeeder(IServiceProvider serviceProvider)
     {
         _context = serviceProvider.GetRequiredService<CatalogDbContext>();
+        _redis = serviceProvider.GetRequiredService<IConnectionMultiplexer>();
         _logger = serviceProvider.GetRequiredService<ILogger<DatabaseSeeder>>();
     }
 
@@ -89,12 +92,32 @@ public class DatabaseSeeder
                 book.Tags = bookData.Tags ?? new List<string>();
                 book.Description = bookData.Description ?? "";
                 book.CoverUrl = bookData.CoverUrl ?? "";
+                book.CopiesAvailable = bookData.CopiesAvailable ?? 3; // Par défaut 3 si non spécifié
+                book.TotalCopies = bookData.TotalCopies ?? 3; // Par défaut 3 si non spécifié
 
                 _context.Books.Add(book);
             }
 
             await _context.SaveChangesAsync();
             _logger.LogInformation("Successfully seeded {Count} books", booksData.Count);
+
+            // Clear Redis cache after seeding
+            try
+            {
+                var db = _redis.GetDatabase();
+                var server = _redis.GetServer(_redis.GetEndPoints().First());
+                
+                var keysToDelete = server.Keys(pattern: "books:*").ToArray();
+                if (keysToDelete.Any())
+                {
+                    await db.KeyDeleteAsync(keysToDelete);
+                    _logger.LogInformation("Cleared {Count} Redis cache keys after seeding", keysToDelete.Length);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to clear Redis cache after seeding");
+            }
         }
         catch (Exception ex)
         {
@@ -148,5 +171,7 @@ public class BookData
     public int? Duration { get; set; }
     public string? Narrator { get; set; }
     public string? AudioFormat { get; set; }
+    public int? CopiesAvailable { get; set; }
+    public int? TotalCopies { get; set; }
 }
 
