@@ -6,14 +6,11 @@ const NotificationToast: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
-    // Connect to WebSocket
     websocketService.connect();
 
-    // Add listener for notifications
     const handleNotification = (notification: Notification) => {
       setNotifications(prev => [...prev, notification]);
       
-      // Auto-remove after 5 seconds
       setTimeout(() => {
         setNotifications(prev => prev.filter(n => n !== notification));
       }, 5000);
@@ -21,7 +18,6 @@ const NotificationToast: React.FC = () => {
 
     websocketService.addListener(handleNotification);
 
-    // Cleanup
     return () => {
       websocketService.removeListener(handleNotification);
     };

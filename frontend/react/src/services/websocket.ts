@@ -31,7 +31,6 @@ export class WebSocketService {
       console.log('WebSocket connected');
       this.reconnectAttempts = 0;
       
-      // Send ping every 30 seconds to keep connection alive
       setInterval(() => {
         if (this.ws?.readyState === WebSocket.OPEN) {
           this.ws.send('ping');
@@ -43,7 +42,7 @@ export class WebSocketService {
       console.log('WebSocket message received:', event.data);
       
       if (event.data === 'pong') {
-        return; // Ignore pong responses
+        return;
       }
 
       try {
@@ -101,7 +100,6 @@ export class WebSocketService {
   }
 }
 
-// Singleton instance
 const WS_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:5000/ws';
 export const websocketService = new WebSocketService(WS_URL);
 

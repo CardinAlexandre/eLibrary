@@ -118,7 +118,6 @@ const Profile: React.FC = () => {
     setError('');
     setSuccess('');
 
-    // Validation
     if (!formData.firstName || !formData.lastName || !formData.email) {
       setError('Tous les champs sont requis');
       return;
@@ -188,7 +187,6 @@ const Profile: React.FC = () => {
         }
       );
 
-      // Update token and user in Redux
       localStorage.setItem('token', response.data.token);
       dispatch(updateUser(response.data));
       
@@ -218,7 +216,6 @@ const Profile: React.FC = () => {
         }
       );
 
-      // Update token and user in Redux
       localStorage.setItem('token', response.data.token);
       dispatch(updateUser(response.data));
       

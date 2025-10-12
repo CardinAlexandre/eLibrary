@@ -1,7 +1,13 @@
 {
   "short_name": "eLibrary",
-  "name": "eLibrary - Gestion de Bibliothèque",
+  "name": "eLibrary - Votre bibliothèque numérique",
   "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
     {
       "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
