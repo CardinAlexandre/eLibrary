@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bookGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1976d2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#42a5f5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#bookGradient)"/>
+  
+  <!-- Book -->
+  <g transform="translate(50, 50)">
+    <!-- Left page -->
+    <path d="M -20 -18 L -20 18 Q -20 22 -16 22 L -2 22 L -2 -18 Z" 
+          fill="#ffffff" stroke="#e3f2fd" stroke-width="0.5"/>
+    
+    <!-- Right page -->
+    <path d="M 2 -18 L 2 22 L 16 22 Q 20 22 20 18 L 20 -18 Z" 
+          fill="#ffffff" stroke="#e3f2fd" stroke-width="0.5"/>
+    
+    <!-- Center fold -->
+    <line x1="0" y1="-18" x2="0" y2="22" stroke="#bbdefb" stroke-width="1"/>
+    
+    <!-- Text lines (left page) -->
+    <line x1="-16" y1="-12" x2="-6" y2="-12" stroke="#1976d2" stroke-width="1" opacity="0.5"/>
+    <line x1="-16" y1="-7" x2="-6" y2="-7" stroke="#1976d2" stroke-width="1" opacity="0.5"/>
+    <line x1="-16" y1="-2" x2="-6" y2="-2" stroke="#1976d2" stroke-width="1" opacity="0.5"/>
+    <line x1="-16" y1="3" x2="-6" y2="3" stroke="#1976d2" stroke-width="1" opacity="0.5"/>
+    
+    <!-- Text lines (right page) -->
+    <line x1="6" y1="-12" x2="16" y2="-12" stroke="#1976d2" stroke-width="1" opacity="0.5"/>
+    <line x1="6" y1="-7" x2="16" y2="-7" stroke="#1976d2" stroke-width="1" opacity="0.5"/>
+    <line x1="6" y1="-2" x2="16" y2="-2" stroke="#1976d2" stroke-width="1" opacity="0.5"/>
+    <line x1="6" y1="3" x2="16" y2="3" stroke="#1976d2" stroke-width="1" opacity="0.5"/>
+    
+    <!-- Bookmark -->
+    <path d="M -8 -18 L -8 -22 L -4 -19 L 0 -22 L 0 -18" 
+          fill="#dc004e" stroke="#c51162" stroke-width="0.5"/>
+  </g>
+</svg>
+

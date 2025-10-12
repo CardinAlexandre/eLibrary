@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Paper, TextField, Button, Typography, Box, Alert, Link as MuiLink } from '@mui/material';
+import { Container, Paper, TextField, Button, Typography, Box, Alert, Link as MuiLink, Chip, Stack } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { login } from '../store/slices/authSlice';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import LocalLibraryIcon from '@mui/icons-material/LocalLibrary';
+import PersonIcon from '@mui/icons-material/Person';
 
 const Login: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -20,6 +23,11 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(login({ email, password }));
+  };
+
+  const fillTestAccount = (testEmail: string, testPassword: string) => {
+    setEmail(testEmail);
+    setPassword(testPassword);
   };
 
   return (
@@ -72,17 +80,37 @@ const Login: React.FC = () => {
         </Box>
 
         <Box sx={{ mt: 3, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
-          <Typography variant="caption" display="block" gutterBottom>
-            <strong>Comptes de test :</strong>
+          <Typography variant="body2" display="block" gutterBottom fontWeight="bold">
+            Comptes de test :
           </Typography>
-          <Typography variant="caption" display="block">
-            Admin: admin@elibrary.com / Admin@2025!
-          </Typography>
-          <Typography variant="caption" display="block">
-            Librarian: librarian@elibrary.com / Librarian@2025!
-          </Typography>
-          <Typography variant="caption" display="block">
-            Member: member@elibrary.com / Member@2025!
+          <Stack direction="column" spacing={1}>
+            <Chip
+              icon={<AdminPanelSettingsIcon />}
+              label="Admin eLibrary"
+              onClick={() => fillTestAccount('admin@elibrary.com', 'Admin@2025!')}
+              clickable
+              color="error"
+              sx={{ justifyContent: 'flex-start', px: 2, py: 2.5, height: 'auto' }}
+            />
+            <Chip
+              icon={<LocalLibraryIcon />}
+              label="Librarian eLibrary"
+              onClick={() => fillTestAccount('librarian@elibrary.com', 'Librarian@2025!')}
+              clickable
+              color="primary"
+              sx={{ justifyContent: 'flex-start', px: 2, py: 2.5, height: 'auto' }}
+            />
+            <Chip
+              icon={<PersonIcon />}
+              label="Member eLibrary"
+              onClick={() => fillTestAccount('member@elibrary.com', 'Member@2025!')}
+              clickable
+              color="success"
+              sx={{ justifyContent: 'flex-start', px: 2, py: 2.5, height: 'auto' }}
+            />
+          </Stack>
+          <Typography variant="caption" display="block" sx={{ mt: 1.5 }} color="text.secondary">
+            💡 Cliquez sur un compte pour remplir le formulaire
           </Typography>
         </Box>
       </Paper>

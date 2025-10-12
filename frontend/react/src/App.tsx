@@ -6,7 +6,6 @@ import Layout from './components/Layout/Layout';
 import NotificationToast from './components/Notifications/NotificationToast';
 import Home from './pages/Home';
 import BookDetails from './pages/BookDetails';
-import Search from './pages/Search';
 import Import from './pages/Import';
 import Loans from './pages/Loans';
 import Dashboard from './pages/Dashboard';
@@ -39,7 +38,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/books/:id" element={<BookDetails />} />
-            <Route path="/search" element={<Search />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             

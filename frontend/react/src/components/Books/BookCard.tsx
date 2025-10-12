@@ -22,13 +22,30 @@ const BookCard: React.FC<BookCardProps> = ({ book }) => {
 
   return (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardMedia
-        component="img"
-        height="200"
-        image={book.coverUrl || 'https://via.placeholder.com/150x200?text=No+Cover'}
-        alt={book.title}
-        sx={{ objectFit: 'cover' }}
-      />
+      <Box
+        sx={{
+          width: '100%',
+          paddingTop: '150%',
+          position: 'relative',
+          backgroundColor: '#f5f5f5',
+          overflow: 'hidden'
+        }}
+      >
+        <CardMedia
+          component="img"
+          image={book.coverUrl || 'https://via.placeholder.com/200x300?text=No+Cover'}
+          alt={book.title}
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            objectPosition: 'center'
+          }}
+        />
+      </Box>
       <CardContent sx={{ flexGrow: 1 }}>
         <Typography gutterBottom variant="h6" component="div" noWrap>
           {book.title}

@@ -31,7 +31,6 @@ interface RegisterData {
   lastName: string;
 }
 
-// Helper function to decode JWT token
 const decodeToken = (token: string): User | null => {
   try {
     const base64Url = token.split('.')[1];
@@ -44,7 +43,6 @@ const decodeToken = (token: string): User | null => {
     );
     const payload = JSON.parse(jsonPayload);
     
-    // Extract user info from token
     return {
       userId: payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || payload.sub || payload.userId,
       email: payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email,
@@ -60,7 +58,6 @@ const decodeToken = (token: string): User | null => {
   }
 };
 
-// Initialize user from token if available
 const storedToken = localStorage.getItem('token');
 const initialUser = storedToken ? decodeToken(storedToken) : null;
 

@@ -36,9 +36,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Button color="inherit" component={Link} to="/">
             Catalogue
           </Button>
-          <Button color="inherit" component={Link} to="/search">
-            Recherche
-          </Button>
           
           {isAuthenticated && (
             <>
