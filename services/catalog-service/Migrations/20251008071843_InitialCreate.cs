@@ -60,6 +60,7 @@ public partial class InitialCreate : Migration
                 BookId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                 UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                 UserEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                UserName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                 LoanDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                 DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                 ReturnDate = table.Column<DateTime>(type: "datetime2", nullable: true),

@@ -1,6 +1,5 @@
 # eLibrary - Microservices Library Management Platform
 
-[![CI/CD](https://github.com/elibrary/elibrary/workflows/CI/badge.svg)](https://github.com/elibrary/elibrary/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## 🎯 Overview
@@ -17,20 +16,20 @@ eLibrary is a modern library management platform built with a .NET microservices
        │                   │
        └───────┬───────────┘
                │
-        ┌──────▼──────┐
+        ┌──────▼───────┐
         │  API Gateway │
         │    (YARP)    │
         └──────┬───────┘
                │
     ┌──────────┼──────────────┐
     │          │              │
-┌───▼───┐  ┌──▼───┐  ┌──────▼────┐
+┌───▼───┐  ┌──▼───┐  ┌──────▼─────┐
 │Catalog│  │ Auth │  │ Recommender│
-└───┬───┘  └──────┘  └──────┬────┘
+└───┬───┘  └──────┘  └──────┬─────┘
     │                       │
-┌───▼─────┐  ┌────────┐ ┌──▼──────┐
+┌───▼─────┐  ┌─────────┐ ┌───▼──────┐
 │Importer │  │Analytics│ │ WebSocket│
-└─────────┘  └─────────┘ └─────────┘
+└─────────┘  └─────────┘ └──────────┘
        │           │
     ┌──▼───────────▼──┐
     │   SQL Server    │
@@ -40,29 +39,6 @@ eLibrary is a modern library management platform built with a .NET microservices
 ```
 
 ## 🚀 Quick Start
-
-### 📜 PowerShell Scripts (Recommended)
-
-For simplified management, use the provided PowerShell scripts:
-
-```powershell
-# Start all services in the correct order
-.\scripts\start-services.ps1
-
-# Check services health
-.\scripts\check-health.ps1
-
-# Seed the database
-.\scripts\seed-database.ps1
-
-# Stop services gracefully
-.\scripts\stop-services.ps1
-
-# Restart a specific service
-.\scripts\restart-service.ps1 -ServiceName catalog-service
-```
-
-📖 **Full documentation**: [scripts/README.md](scripts/README.md)
 
 ### Prerequisites
 
