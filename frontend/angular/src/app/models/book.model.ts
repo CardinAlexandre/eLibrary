@@ -12,9 +12,27 @@ export interface Book {
   description: string;
   coverUrl: string;
   isAvailable: boolean;
+  copiesAvailable: number;
+  totalCopies: number;
   averageRating: number;
   reviewCount: number;
   typeSpecificData: Record<string, any>;
+}
+
+export interface Loan {
+  id: string;
+  bookId: string;
+  bookTitle: string;
+  userId: string;
+  userEmail: string;
+  userName?: string;
+  loanDate: string;
+  dueDate: string;
+  returnDate: string | null;
+  status: string;
+  isOverdue: boolean;
+  daysOverdue: number;
+  lateFee: number;
 }
 
 export interface PagedResult<T> {

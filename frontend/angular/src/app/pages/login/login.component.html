@@ -22,9 +22,20 @@
       </form>
 
       <div class="test-accounts">
-        <p><strong>Comptes de test :</strong></p>
-        <p>Admin: admin&#64;elibrary.com / Admin&#64;2025!</p>
-        <p>Member: member&#64;elibrary.com / Member&#64;2025!</p>
+        <p style="font-weight: bold; margin-bottom: 10px;">Comptes de test :</p>
+        <button mat-stroked-button color="warn" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;" (click)="fillTestAccount('admin@elibrary.com', 'Admin@2025!')">
+          <mat-icon>admin_panel_settings</mat-icon>
+          <span style="margin-left: 8px;">Admin eLibrary</span>
+        </button>
+        <button mat-stroked-button color="primary" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;" (click)="fillTestAccount('librarian@elibrary.com', 'Librarian@2025!')">
+          <mat-icon>local_library</mat-icon>
+          <span style="margin-left: 8px;">Librarian eLibrary</span>
+        </button>
+        <button mat-stroked-button color="accent" style="width: 100%; justify-content: flex-start;" (click)="fillTestAccount('member@elibrary.com', 'Member@2025!')">
+          <mat-icon>person</mat-icon>
+          <span style="margin-left: 8px;">Member eLibrary</span>
+        </button>
+        <p style="font-size: 12px; color: #666; margin-top: 10px;">💡 Cliquez sur un compte pour remplir le formulaire</p>
       </div>
     </mat-card-content>
   </mat-card>

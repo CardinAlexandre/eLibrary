@@ -1,0 +1,158 @@
+<div class="dashboard-container" style="max-width: 1400px; margin: 40px auto; padding: 20px;">
+  <h2>Dashboard Administrateur</h2>
+
+  <div *ngIf="loading" style="text-align: center; padding: 40px;">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="!loading && data">
+    <!-- Statistiques principales -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0;">
+      <mat-card style="background-color: #1976d2; color: white;">
+        <mat-card-content style="text-align: center; padding: 30px 20px;">
+          <h1 style="margin: 0; font-size: 48px;">{{ data.totalBooks || 0 }}</h1>
+          <p style="margin: 10px 0 0 0;">Livres au total</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card style="background-color: #388e3c; color: white;">
+        <mat-card-content style="text-align: center; padding: 30px 20px;">
+          <h1 style="margin: 0; font-size: 48px;">{{ data.totalLoans || 0 }}</h1>
+          <p style="margin: 10px 0 0 0;">Emprunts total</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card style="background-color: #f57c00; color: white;">
+        <mat-card-content style="text-align: center; padding: 30px 20px;">
+          <h1 style="margin: 0; font-size: 48px;">{{ data.activeLoans || 0 }}</h1>
+          <p style="margin: 10px 0 0 0;">Emprunts actifs</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card style="background-color: #d32f2f; color: white;">
+        <mat-card-content style="text-align: center; padding: 30px 20px;">
+          <h1 style="margin: 0; font-size: 48px;">{{ data.overdueLoans || 0 }}</h1>
+          <p style="margin: 10px 0 0 0;">En retard</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Disponibilité -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0;">
+      <mat-card>
+        <mat-card-content style="text-align: center; padding: 20px;">
+          <h2 style="margin: 0; font-size: 36px;">{{ data.totalCopies || 0 }}</h2>
+          <p style="margin: 5px 0 0 0; color: #666;">Exemplaires totaux</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card>
+        <mat-card-content style="text-align: center; padding: 20px;">
+          <h2 style="margin: 0; font-size: 36px;">{{ data.availableCopies || 0 }}</h2>
+          <p style="margin: 5px 0 0 0; color: #666;">Exemplaires disponibles</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card>
+        <mat-card-content style="text-align: center; padding: 20px;">
+          <h2 style="margin: 0; font-size: 36px;">{{ getAvailabilityRate() | number: '1.1-1' }}%</h2>
+          <p style="margin: 5px 0 0 0; color: #666;">Taux de disponibilité</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Top Genres -->
+    <mat-card *ngIf="data.topGenres && data.topGenres.length > 0" style="margin: 20px 0;">
+      <mat-card-header>
+        <mat-card-title>🏆 Top Genres</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngFor="let genre of data.topGenres" style="margin-bottom: 15px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <strong>{{ genre.genre }}</strong>
+            <span>{{ genre.loanCount }} emprunts ({{ genre.activeLoans }} actifs)</span>
+          </div>
+          <mat-progress-bar mode="determinate" [value]="(genre.loanCount / data.totalLoans) * 100"></mat-progress-bar>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Top Books -->
+    <mat-card *ngIf="data.topBooks && data.topBooks.length > 0" style="margin: 20px 0;">
+      <mat-card-header>
+        <mat-card-title>📚 Top Livres</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngFor="let book of data.topBooks" style="padding: 10px 0; border-bottom: 1px solid #eee;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong>{{ book.title }}</strong>
+              <p style="margin: 5px 0; font-size: 14px; color: #666;">
+                ⭐ {{ book.averageRating | number: '1.1-1' }} / 5.0
+              </p>
+            </div>
+            <mat-chip color="primary" selected>{{ book.loanCount }} emprunts</mat-chip>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Emprunts actifs en détail -->
+    <mat-card *ngIf="data.activeLoansDetails && data.activeLoansDetails.length > 0" style="margin: 20px 0;">
+      <mat-card-header>
+        <mat-card-title>📖 Emprunts actifs en détail ({{ data.activeLoansDetails.length }})</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p style="color: #666; margin-bottom: 15px;">Liste complète des livres actuellement empruntés</p>
+        <div *ngFor="let loan of data.activeLoansDetails" 
+             style="padding: 15px; margin-bottom: 10px; border-radius: 4px; border: 1px solid"
+             [style.background-color]="loan.isOverdue ? '#ffebee' : '#fff'"
+             [style.border-color]="loan.isOverdue ? '#f44336' : '#e0e0e0'">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div style="flex: 1; min-width: 300px;">
+              <strong style="font-size: 16px;">{{ loan.bookTitle }}</strong>
+              <p style="margin: 5px 0; color: #666;">
+                👤 Emprunté par <strong>{{ loan.userName || loan.userEmail }}</strong>
+              </p>
+            </div>
+            <div style="flex: 1; min-width: 250px;">
+              <p style="margin: 5px 0; font-size: 14px; color: #666;">
+                📅 Emprunté le {{ loan.loanDate | date: 'dd/MM/yyyy' }}
+              </p>
+              <p style="margin: 5px 0; font-size: 14px;" [style.color]="loan.isOverdue ? '#f44336' : '#666'">
+                ⏰ À retourner le {{ loan.dueDate | date: 'dd/MM/yyyy' }}
+                <span *ngIf="loan.isOverdue" style="font-weight: bold;"> ({{ loan.daysOverdue }} jour(s) de retard)</span>
+              </p>
+              <p *ngIf="loan.isOverdue && loan.lateFee > 0" style="margin: 5px 0; color: #f44336; font-weight: bold;">
+                💰 Pénalité : {{ loan.lateFee | number: '1.2-2' }} €
+              </p>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Activité récente -->
+    <mat-card *ngIf="data.recentActivity && data.recentActivity.length > 0" style="margin: 20px 0;">
+      <mat-card-header>
+        <mat-card-title>🕐 Activité récente</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngFor="let activity of data.recentActivity" style="padding: 10px 0; border-bottom: 1px solid #eee;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong>{{ activity.eventType === 'Borrowed' ? '📖 Emprunté' : '✅ Retourné' }}</strong>: {{ activity.bookTitle }}
+              <p style="margin: 5px 0; font-size: 12px; color: #666;">
+                Par {{ activity.userName || activity.userEmail }}
+              </p>
+            </div>
+            <span style="font-size: 12px; color: #666;">
+              {{ activity.eventDate | date: 'dd/MM/yyyy' }}
+            </span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+

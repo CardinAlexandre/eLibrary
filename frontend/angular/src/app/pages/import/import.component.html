@@ -1,0 +1,103 @@
+<div class="import-container" style="max-width: 1200px; margin: 40px auto; padding: 20px;">
+  <h2>Gestion du Catalogue</h2>
+
+  <mat-card *ngIf="success" style="margin-bottom: 20px; background-color: #d4edda; border: 1px solid #c3e6cb;">
+    <mat-card-content>
+      <p style="color: #155724; margin: 0;">{{ success }}</p>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card *ngIf="error" style="margin-bottom: 20px; background-color: #f8d7da; border: 1px solid #f5c6cb;">
+    <mat-card-content>
+      <p style="color: #721c24; margin: 0;">{{ error }}</p>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Database Management -->
+  <mat-card style="margin-bottom: 30px;">
+    <mat-card-header>
+      <mat-card-title>📚 Gestion de la base de données</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px;">
+        <button mat-raised-button color="primary" (click)="seedDatabase()" [disabled]="loading">
+          <mat-icon>cloud_download</mat-icon>
+          Initialize Database
+        </button>
+        <button mat-raised-button color="warn" (click)="clearCatalog()" [disabled]="loading">
+          <mat-icon>delete_forever</mat-icon>
+          Clear Catalog
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Google Books Search -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>🔍 Rechercher dans Google Books</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <mat-form-field appearance="outline" style="flex: 1;">
+          <mat-label>Rechercher un livre...</mat-label>
+          <input matInput [(ngModel)]="searchQuery" (keyup.enter)="searchGoogleBooks()" [disabled]="loading">
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="searchGoogleBooks()" [disabled]="loading || !searchQuery.trim()">
+          <mat-icon>search</mat-icon>
+          Rechercher
+        </button>
+      </div>
+
+      <div *ngIf="loading" style="text-align: center; padding: 40px;">
+        <mat-spinner></mat-spinner>
+      </div>
+
+      <!-- Search Results -->
+      <div *ngIf="!loading && searchResults.length > 0" style="margin-top: 30px;">
+        <h3>Résultats ({{ searchResults.length }})</h3>
+        <div *ngFor="let book of searchResults" style="margin-bottom: 20px;">
+          <mat-card>
+            <mat-card-content>
+              <div style="display: flex; gap: 20px; align-items: start;">
+                <img [src]="book.coverUrl || '/assets/no-cover.png'" 
+                     [alt]="book.title" 
+                     style="width: 80px; height: 120px; object-fit: contain; border: 1px solid #ddd;">
+                
+                <div style="flex: 1;">
+                  <h4 style="margin: 0 0 10px 0;">{{ book.title }}</h4>
+                  <p style="margin: 5px 0; color: #666;">
+                    <strong>Auteur(s):</strong> {{ book.authors.join(', ') }}
+                  </p>
+                  <p style="margin: 5px 0; color: #666;" *ngIf="book.isbn">
+                    <strong>ISBN:</strong> {{ book.isbn }}
+                  </p>
+                  <p style="margin: 5px 0; color: #666;">
+                    <strong>Langue:</strong> {{ book.language }} | <strong>Pages:</strong> {{ book.pages }}
+                  </p>
+                  <p style="margin: 10px 0; font-size: 14px;">
+                    {{ book.description.substring(0, 200) }}{{ book.description.length > 200 ? '...' : '' }}
+                  </p>
+                  
+                  <button mat-raised-button color="accent" 
+                          (click)="addBook(book)" 
+                          [disabled]="isAdding(book.id)"
+                          style="margin-top: 10px;">
+                    <mat-icon>add</mat-icon>
+                    {{ isAdding(book.id) ? 'Ajout en cours...' : 'Ajouter au catalogue' }}
+                  </button>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && searchQuery && searchResults.length === 0" style="text-align: center; padding: 40px; color: #666;">
+        <mat-icon style="font-size: 64px; height: 64px; width: 64px;">search_off</mat-icon>
+        <p>Aucun résultat trouvé pour "{{ searchQuery }}"</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+

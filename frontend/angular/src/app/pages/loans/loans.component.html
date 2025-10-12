@@ -1,0 +1,86 @@
+<div class="loans-container" style="max-width: 1200px; margin: 40px auto; padding: 20px;">
+  <h2>Mes Emprunts</h2>
+
+  <div *ngIf="loading" style="text-align: center; padding: 40px;">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="!loading">
+    <mat-card *ngIf="success" style="margin-bottom: 20px; background-color: #d4edda; border: 1px solid #c3e6cb;">
+      <mat-card-content>
+        <p style="color: #155724; margin: 0;">{{ success }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card *ngIf="error" style="margin-bottom: 20px; background-color: #f8d7da; border: 1px solid #f5c6cb;">
+      <mat-card-content>
+        <p style="color: #721c24; margin: 0;">{{ error }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Active Loans -->
+    <h3>📖 Emprunts actifs ({{ activeLoans.length }})</h3>
+    
+    <div *ngIf="activeLoans.length === 0" style="text-align: center; padding: 40px; color: #666;">
+      <mat-icon style="font-size: 64px; height: 64px; width: 64px;">check_circle</mat-icon>
+      <p>Aucun emprunt actif</p>
+    </div>
+
+    <div *ngFor="let loan of activeLoans" style="margin-bottom: 20px;">
+      <mat-card [style.border-left]="loan.isOverdue ? '4px solid #f44336' : '4px solid #4caf50'">
+        <mat-card-content>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+            <div style="flex: 1; min-width: 300px;">
+              <h3 style="margin: 0 0 10px 0;">{{ loan.bookTitle }}</h3>
+              <p style="margin: 5px 0; color: #666;">
+                <mat-icon style="vertical-align: middle; margin-right: 5px; font-size: 18px; height: 18px; width: 18px;">event</mat-icon>
+                Emprunté le {{ loan.loanDate | date: 'dd/MM/yyyy' }}
+              </p>
+              <p style="margin: 5px 0;" [style.color]="loan.isOverdue ? '#f44336' : '#666'">
+                <mat-icon style="vertical-align: middle; margin-right: 5px; font-size: 18px; height: 18px; width: 18px;">schedule</mat-icon>
+                À retourner le {{ loan.dueDate | date: 'dd/MM/yyyy' }}
+                <span *ngIf="loan.isOverdue" style="font-weight: bold;"> (⚠️ {{ loan.daysOverdue }} jour(s) de retard)</span>
+              </p>
+              <p *ngIf="loan.isOverdue && loan.lateFee > 0" style="margin: 5px 0; color: #f44336; font-weight: bold;">
+                💰 Pénalité : {{ loan.lateFee | number: '1.2-2' }} €
+              </p>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <mat-chip [color]="loan.isOverdue ? 'warn' : 'accent'" selected>
+                {{ loan.status }}
+              </mat-chip>
+              <button mat-raised-button color="primary" (click)="returnBook(loan.id)" [disabled]="isReturning(loan.id)">
+                {{ isReturning(loan.id) ? 'Retour en cours...' : 'Retourner' }}
+              </button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Returned Loans -->
+    <h3 style="margin-top: 40px;">✅ Livres retournés ({{ returnedLoans.length }})</h3>
+    
+    <div *ngIf="returnedLoans.length === 0" style="text-align: center; padding: 20px; color: #666;">
+      <p>Aucun livre retourné</p>
+    </div>
+
+    <div *ngFor="let loan of returnedLoans" style="margin-bottom: 15px;">
+      <mat-card style="opacity: 0.8;">
+        <mat-card-content>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div>
+              <h4 style="margin: 0;">{{ loan.bookTitle }}</h4>
+              <p style="margin: 5px 0; font-size: 14px; color: #666;">
+                Emprunté: {{ loan.loanDate | date: 'dd/MM/yyyy' }} - Retourné: {{ loan.returnDate | date: 'dd/MM/yyyy' }}
+              </p>
+            </div>
+            <mat-chip color="accent" selected>Retourné</mat-chip>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
+

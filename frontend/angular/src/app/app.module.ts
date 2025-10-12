@@ -19,12 +19,22 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatBadgeModule } from '@angular/material/badge';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './pages/home/home.component';
 import { BookDetailsComponent } from './pages/book-details/book-details.component';
 import { LoginComponent } from './pages/login/login.component';
+import { RegisterComponent } from './pages/register/register.component';
+import { ProfileComponent } from './pages/profile/profile.component';
+import { LoansComponent } from './pages/loans/loans.component';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { ImportComponent } from './pages/import/import.component';
 import { LayoutComponent } from './components/layout/layout.component';
 
 // Store
@@ -40,6 +50,11 @@ import { AuthEffects } from './store/effects/auth.effects';
     HomeComponent,
     BookDetailsComponent,
     LoginComponent,
+    RegisterComponent,
+    ProfileComponent,
+    LoansComponent,
+    DashboardComponent,
+    ImportComponent,
     LayoutComponent
   ],
   imports: [
@@ -62,6 +77,11 @@ import { AuthEffects } from './store/effects/auth.effects';
     MatProgressSpinnerModule,
     MatPaginatorModule,
     MatSnackBarModule,
+    MatDividerModule,
+    MatProgressBarModule,
+    MatMenuModule,
+    MatTooltipModule,
+    MatBadgeModule,
     
     // NgRx
     StoreModule.forRoot({

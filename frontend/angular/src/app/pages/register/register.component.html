@@ -1,0 +1,83 @@
+<div class="register-container">
+  <mat-card class="register-card">
+    <mat-card-header>
+      <mat-card-title class="title">Inscription</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div *ngIf="error || validationError" class="alert-container">
+        <mat-error class="error-message">
+          {{ validationError || error }}
+        </mat-error>
+      </div>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Prénom</mat-label>
+          <input matInput formControlName="firstName" required>
+          <mat-error *ngIf="registerForm.get('firstName')?.hasError('required')">
+            Le prénom est requis
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nom</mat-label>
+          <input matInput formControlName="lastName" required>
+          <mat-error *ngIf="registerForm.get('lastName')?.hasError('required')">
+            Le nom est requis
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" required>
+          <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
+            L'email est requis
+          </mat-error>
+          <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
+            Email invalide
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mot de passe</mat-label>
+          <input matInput type="password" formControlName="password" required>
+          <mat-error *ngIf="registerForm.get('password')?.hasError('required')">
+            Le mot de passe est requis
+          </mat-error>
+          <mat-error *ngIf="registerForm.get('password')?.hasError('minlength')">
+            Le mot de passe doit contenir au moins 8 caractères
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirmer le mot de passe</mat-label>
+          <input matInput type="password" formControlName="confirmPassword" required>
+          <mat-error *ngIf="registerForm.get('confirmPassword')?.hasError('required')">
+            La confirmation est requise
+          </mat-error>
+        </mat-form-field>
+
+        <button 
+          mat-raised-button 
+          color="primary" 
+          type="submit" 
+          class="full-width submit-button"
+          [disabled]="loading"
+        >
+          <span *ngIf="!loading">S'inscrire</span>
+          <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+          <span *ngIf="loading">Inscription...</span>
+        </button>
+      </form>
+
+      <div class="login-link">
+        <p>
+          Déjà un compte ? 
+          <a routerLink="/login">Se connecter</a>
+        </p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
