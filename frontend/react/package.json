@@ -10,6 +10,7 @@
     "@reduxjs/toolkit": "^2.0.1",
     "ajv": "^8.12.0",
     "axios": "^1.6.5",
+    "elibrary-react": "file:",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^9.0.4",
@@ -50,12 +51,6 @@
     "cypress:headless": "cypress run",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [

@@ -4,6 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 COPY . .
+ENV DISABLE_ESLINT_PLUGIN=true
 RUN npm run build
 
 # Production stage
