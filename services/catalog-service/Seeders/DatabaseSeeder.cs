@@ -23,17 +23,14 @@ public class DatabaseSeeder
     {
         try
         {
-            // Ensure database is created and migrated
             await _context.Database.MigrateAsync();
 
-            // Check if data already exists
             if (await _context.Books.AnyAsync())
             {
                 _logger.LogInformation("Database already contains data, skipping seed");
                 return;
             }
 
-            // Read books from JSON file
             var jsonPath = FindBooksJsonFile();
 
             if (jsonPath == null)
@@ -81,7 +78,7 @@ public class DatabaseSeeder
                     _ => throw new InvalidOperationException($"Unknown book type: {bookData.Type}")
                 };
 
-                book.Id = Guid.Parse(bookData.Id ?? Guid.NewGuid().ToString());
+                book.Id = Guid.NewGuid();
                 book.Title = bookData.Title ?? "";
                 book.Authors = bookData.Authors ?? new List<string>();
                 book.Isbn = bookData.Isbn ?? "";
@@ -92,8 +89,10 @@ public class DatabaseSeeder
                 book.Tags = bookData.Tags ?? new List<string>();
                 book.Description = bookData.Description ?? "";
                 book.CoverUrl = bookData.CoverUrl ?? "";
-                book.CopiesAvailable = bookData.CopiesAvailable ?? 3; // Par défaut 3 si non spécifié
-                book.TotalCopies = bookData.TotalCopies ?? 3; // Par défaut 3 si non spécifié
+                book.CopiesAvailable = bookData.CopiesAvailable ?? 3;
+                book.TotalCopies = bookData.TotalCopies ?? 3;
+                
+                _logger.LogDebug("Adding book: {Title} with ID {Id}", book.Title, book.Id);
 
                 _context.Books.Add(book);
             }
@@ -101,7 +100,6 @@ public class DatabaseSeeder
             await _context.SaveChangesAsync();
             _logger.LogInformation("Successfully seeded {Count} books", booksData.Count);
 
-            // Clear Redis cache after seeding
             try
             {
                 var db = _redis.GetDatabase();
@@ -128,10 +126,8 @@ public class DatabaseSeeder
 
     private static string? FindBooksJsonFile()
     {
-        // Start from the application base directory
         var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
 
-        // Search upwards through parent directories
         while (currentDirectory != null)
         {
             var dataFolder = Path.Combine(currentDirectory.FullName, "data");

@@ -21,14 +21,12 @@ public class CatalogDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Table Per Hierarchy (TPH) configuration for Book inheritance
         modelBuilder.Entity<Book>()
             .HasDiscriminator<string>("BookType")
             .HasValue<PrintedBook>("PrintedBook")
             .HasValue<EBook>("EBook")
             .HasValue<AudioBook>("AudioBook");
 
-        // Book configuration
         modelBuilder.Entity<Book>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -37,7 +35,6 @@ public class CatalogDbContext : DbContext
             entity.Property(e => e.Language).HasMaxLength(10);
             entity.Property(e => e.Genre).HasMaxLength(100);
 
-            // Convert List<string> to JSON for storage
             entity.Property(e => e.Authors)
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
@@ -48,17 +45,16 @@ public class CatalogDbContext : DbContext
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
                     v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>());
 
-            // Indexes for performance
             entity.HasIndex(e => e.Isbn);
             entity.HasIndex(e => e.Title);
             entity.HasIndex(e => e.Genre);
         });
 
-        // Loan configuration
         modelBuilder.Entity<Loan>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.UserEmail).IsRequired().HasMaxLength(256);
+            entity.Property(e => e.UserName).HasMaxLength(200);
             entity.Property(e => e.Status).HasConversion<string>();
 
             entity.HasOne(e => e.Book)
@@ -71,7 +67,6 @@ public class CatalogDbContext : DbContext
             entity.HasIndex(e => e.DueDate);
         });
 
-        // Review configuration
         modelBuilder.Entity<Review>(entity =>
         {
             entity.HasKey(e => e.Id);

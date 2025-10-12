@@ -26,7 +26,6 @@ public class RabbitMQService : IDisposable
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            // Declare exchanges
             _channel.ExchangeDeclare("elibrary.events", ExchangeType.Topic, durable: true);
 
             _logger.LogInformation("Connected to RabbitMQ");

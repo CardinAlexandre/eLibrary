@@ -20,7 +20,6 @@ public class BookDto
     public double AverageRating { get; set; }
     public int ReviewCount { get; set; }
 
-    // Type-specific properties (will be populated based on BookType)
     public Dictionary<string, object> TypeSpecificData { get; set; } = new();
 }
 
@@ -37,6 +36,8 @@ public class CreateBookDto
     public List<string> Tags { get; set; } = new();
     public string Description { get; set; } = string.Empty;
     public string CoverUrl { get; set; } = string.Empty;
+    public int CopiesAvailable { get; set; } = 1;
+    public int TotalCopies { get; set; } = 1;
     public Dictionary<string, object> TypeSpecificData { get; set; } = new();
 }
 

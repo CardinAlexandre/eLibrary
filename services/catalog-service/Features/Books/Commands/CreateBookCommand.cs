@@ -3,6 +3,7 @@ using CatalogService.Domain.Entities;
 using CatalogService.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 namespace CatalogService.Features.Books.Commands;
 
@@ -11,10 +12,14 @@ public record CreateBookCommand(CreateBookDto BookDto) : IRequest<BookDto>;
 public class CreateBookCommandHandler : IRequestHandler<CreateBookCommand, BookDto>
 {
     private readonly CatalogDbContext _context;
+    private readonly IConnectionMultiplexer _redis;
+    private readonly ILogger<CreateBookCommandHandler> _logger;
 
-    public CreateBookCommandHandler(CatalogDbContext context)
+    public CreateBookCommandHandler(CatalogDbContext context, IConnectionMultiplexer redis, ILogger<CreateBookCommandHandler> logger)
     {
         _context = context;
+        _redis = redis;
+        _logger = logger;
     }
 
     public async Task<BookDto> Handle(CreateBookCommand request, CancellationToken cancellationToken)
@@ -55,9 +60,28 @@ public class CreateBookCommandHandler : IRequestHandler<CreateBookCommand, BookD
         book.Tags = dto.Tags;
         book.Description = dto.Description;
         book.CoverUrl = dto.CoverUrl;
+        book.CopiesAvailable = dto.CopiesAvailable;
+        book.TotalCopies = dto.TotalCopies;
 
         _context.Books.Add(book);
         await _context.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            var db = _redis.GetDatabase();
+            var server = _redis.GetServer(_redis.GetEndPoints().First());
+            var keys = server.Keys(pattern: "books:*").ToArray();
+            
+            if (keys.Length > 0)
+            {
+                await db.KeyDeleteAsync(keys);
+                _logger.LogInformation("Invalidated {Count} Redis cache keys after creating book", keys.Length);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to invalidate Redis cache after creating book, but book was created successfully");
+        }
 
         return MapToDto(book);
     }
@@ -82,7 +106,9 @@ public class CreateBookCommandHandler : IRequestHandler<CreateBookCommand, BookD
             CoverUrl = book.CoverUrl,
             IsAvailable = book.IsAvailable,
             AverageRating = book.AverageRating,
-            ReviewCount = book.ReviewCount
+            ReviewCount = book.ReviewCount,
+            CopiesAvailable = book.CopiesAvailable,
+            TotalCopies = book.TotalCopies
         };
 
         switch (book)

@@ -13,7 +13,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Serilog Configuration
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
@@ -23,11 +22,9 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Database Configuration
 builder.Services.AddDbContext<CatalogDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Redis Cache
 var redisConnection = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp => 
     ConnectionMultiplexer.Connect(redisConnection));
@@ -37,17 +34,13 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = redisConnection;
 });
 
-// MediatR & FluentValidation
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
-// RabbitMQ
 builder.Services.AddSingleton<RabbitMQService>();
 
-// WebSocket Notification Client
 builder.Services.AddHttpClient<NotificationClient>();
 
-// JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -67,7 +60,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// Controllers & Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -97,11 +89,9 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Health Checks
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<CatalogDbContext>();
 
-// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -114,7 +104,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Middleware Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -132,7 +121,6 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapMetrics();
 
-// Seed Database if argument provided
 if (args.Contains("seed"))
 {
     using var scope = app.Services.CreateScope();
@@ -142,7 +130,6 @@ if (args.Contains("seed"))
     return;
 }
 
-// Database Migration
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -159,6 +146,5 @@ using (var scope = app.Services.CreateScope())
 
 app.Run();
 
-// Make Program accessible for testing
 public partial class Program { }
 

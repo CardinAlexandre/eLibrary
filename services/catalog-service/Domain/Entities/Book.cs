@@ -19,11 +19,9 @@ public abstract class Book
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
-    // Navigation properties
     public virtual ICollection<Loan> Loans { get; set; } = new List<Loan>();
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
-    // Calculated properties
     public double AverageRating => Reviews.Any() ? Reviews.Average(r => r.Rating) : 0.0;
     public int ReviewCount => Reviews.Count;
 }

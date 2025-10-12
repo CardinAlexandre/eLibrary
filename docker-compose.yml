@@ -94,7 +94,7 @@ services:
       - ReverseProxy__Clusters__auth__Destinations__destination1__Address=http://auth-service:80
       - ReverseProxy__Clusters__importer__Destinations__destination1__Address=http://importer-service:80
       - ReverseProxy__Clusters__recommender__Destinations__destination1__Address=http://recommender-service:80
-      # - ReverseProxy__Clusters__analytics__Destinations__destination1__Address=http://analytics-service:80
+      - ReverseProxy__Clusters__analytics__Destinations__destination1__Address=http://analytics-service:80
       - JwtSettings__Secret=SuperSecretKeyForJWTTokenGeneration2025!
       - JwtSettings__Issuer=eLibrary
       - JwtSettings__Audience=eLibrary-Clients
@@ -236,35 +236,38 @@ services:
       retries: 5
       start_period: 40s
 
-  # analytics-service:
-  #   build:
-  #     context: ./services/analytics-service
-  #     dockerfile: Dockerfile
-  #   container_name: elibrary-analytics
-  #   ports:
-  #     - "5005:80"
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #     - ASPNETCORE_URLS=http://+:80
-  #     - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AnalyticsDb;User Id=sa;Password=eLibrary@2025!;TrustServerCertificate=True;
-  #     - ConnectionStrings__Redis=redis:6379
-  #     - RabbitMQ__HostName=rabbitmq
-  #     - RabbitMQ__UserName=guest
-  #     - RabbitMQ__Password=guest
-  #   depends_on:
-  #     sqlserver:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   restart: on-failure
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/health || exit 1"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #     start_period: 40s
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+      dockerfile: Dockerfile
+    container_name: elibrary-analytics
+    ports:
+      - "5005:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AnalyticsDb;User Id=sa;Password=eLibrary@2025!;TrustServerCertificate=True;
+      - ConnectionStrings__Redis=redis:6379
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - JwtSettings__Secret=SuperSecretKeyForJWTTokenGeneration2025!
+      - JwtSettings__Issuer=eLibrary
+      - JwtSettings__Audience=eLibrary-Clients
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   # Frontends
   frontend-react:

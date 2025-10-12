@@ -35,13 +35,11 @@ public class ClearBooksCommandHandler : IRequestHandler<ClearBooksCommand, int>
         _context.Books.RemoveRange(_context.Books);
         await _context.SaveChangesAsync(cancellationToken);
 
-        // Clear all Redis cache keys related to books
         try
         {
             var db = _redis.GetDatabase();
             var server = _redis.GetServer(_redis.GetEndPoints().First());
             
-            // Delete all keys that start with "books:"
             var keysToDelete = server.Keys(pattern: "books:*").ToArray();
             if (keysToDelete.Any())
             {
