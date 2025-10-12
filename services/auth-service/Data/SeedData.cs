@@ -7,7 +7,6 @@ public static class SeedData
 {
     public static async Task Initialize(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole<Guid>> roleManager)
     {
-        // Create roles
         string[] roles = { "Admin", "Librarian", "Member" };
 
         foreach (var role in roles)
@@ -18,7 +17,6 @@ public static class SeedData
             }
         }
 
-        // Create admin user
         var adminEmail = "admin@elibrary.com";
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
@@ -29,7 +27,7 @@ public static class SeedData
                 UserName = adminEmail,
                 Email = adminEmail,
                 FirstName = "Admin",
-                LastName = "User",
+                LastName = "eLibrary",
                 EmailConfirmed = true
             };
 
@@ -41,7 +39,6 @@ public static class SeedData
             }
         }
 
-        // Create librarian user
         var librarianEmail = "librarian@elibrary.com";
         var librarianUser = await userManager.FindByEmailAsync(librarianEmail);
 
@@ -52,7 +49,7 @@ public static class SeedData
                 UserName = librarianEmail,
                 Email = librarianEmail,
                 FirstName = "Librarian",
-                LastName = "User",
+                LastName = "eLibrary",
                 EmailConfirmed = true
             };
 
@@ -64,7 +61,6 @@ public static class SeedData
             }
         }
 
-        // Create member user
         var memberEmail = "member@elibrary.com";
         var memberUser = await userManager.FindByEmailAsync(memberEmail);
 
@@ -75,7 +71,7 @@ public static class SeedData
                 UserName = memberEmail,
                 Email = memberEmail,
                 FirstName = "Member",
-                LastName = "User",
+                LastName = "eLibrary",
                 EmailConfirmed = true
             };
 

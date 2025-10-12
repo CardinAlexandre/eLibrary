@@ -108,7 +108,6 @@ public class AuthController : ControllerBase
     [HttpPost("refresh")]
     public async Task<ActionResult<AuthResponseDto>> Refresh([FromBody] RefreshTokenDto dto)
     {
-        // In production, validate the refresh token from database/cache
         var user = await _userManager.FindByIdAsync(dto.UserId.ToString());
 
         if (user == null)
@@ -182,7 +181,6 @@ public class AuthController : ControllerBase
         user.FirstName = dto.FirstName;
         user.LastName = dto.LastName;
 
-        // Update email if changed
         if (dto.Email != user.Email)
         {
             var setEmailResult = await _userManager.SetEmailAsync(user, dto.Email);
@@ -200,7 +198,6 @@ public class AuthController : ControllerBase
             return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
         }
 
-        // Update password if provided
         if (!string.IsNullOrEmpty(dto.NewPassword))
         {
             if (string.IsNullOrEmpty(dto.CurrentPassword))
@@ -258,7 +255,6 @@ public class AuthController : ControllerBase
             _logger.LogInformation("User promoted to Admin: {UserId}", userId);
         }
 
-        // Generate new token with updated roles
         var token = _jwtService.GenerateToken(user, roles);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
@@ -300,7 +296,6 @@ public class AuthController : ControllerBase
             _logger.LogInformation("Admin role removed from user: {UserId}", userId);
         }
 
-        // Generate new token with updated roles
         var token = _jwtService.GenerateToken(user, roles);
         var refreshToken = _jwtService.GenerateRefreshToken();
 

@@ -11,7 +11,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
@@ -21,11 +20,9 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Database
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
 {
     options.Password.RequireDigit = true;
@@ -38,7 +35,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
 .AddEntityFrameworkStores<AuthDbContext>()
 .AddDefaultTokenProviders();
 
-// JWT Authentication
 var jwtSecret = builder.Configuration["JwtSettings:Secret"] ?? throw new InvalidOperationException("JWT Secret is not configured");
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"] ?? "eLibrary";
 var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? "eLibrary-Clients";
@@ -65,7 +61,6 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
     
-    // Disable automatic redirect to login page
     options.Events = new JwtBearerEvents
     {
         OnChallenge = context =>
@@ -79,10 +74,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Services
 builder.Services.AddScoped<IJwtService, JwtService>();
 
-// Redis
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
@@ -120,7 +113,6 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapMetrics();
 
-// Database Migration & Seed
 using (var scope = app.Services.CreateScope())
 {
     try
