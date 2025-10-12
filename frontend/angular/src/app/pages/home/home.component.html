@@ -1,29 +1,130 @@
-<div class="container">
-  <h1>Catalogue de livres</h1>
+<div class="home-container" style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+  <h2>Catalogue de livres</h2>
 
-  <div *ngIf="loading$ | async" class="loading-spinner">
-    <mat-spinner></mat-spinner>
+  <!-- Indicateur catalogue local -->
+  <mat-card *ngIf="useLocalBooks" style="margin-bottom: 20px; background-color: #e3f2fd; border-left: 4px solid #2196f3;">
+    <mat-card-content>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <mat-icon color="primary">storage</mat-icon>
+        <span>📚 Affichage des livres de votre bibliothèque locale ({{ localBooks.length}} livre{{ localBooks.length > 1 ? 's' : '' }})</span>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Search Bar -->
+  <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+    <mat-form-field appearance="outline" style="flex: 1;">
+      <mat-label>Rechercher dans Google Books (ex: science fiction, harry potter, Victor Hugo...)</mat-label>
+      <input matInput [(ngModel)]="searchQuery" (keyup.enter)="searchGoogleBooks()" [disabled]="loading">
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="searchGoogleBooks()" [disabled]="loading">
+      <mat-icon>search</mat-icon>
+      {{ loading ? 'Chargement...' : 'Rechercher' }}
+    </button>
+    <button mat-raised-button *ngIf="searchQuery || !useLocalBooks" (click)="resetSearch()" [disabled]="loading">
+      <mat-icon>clear</mat-icon>
+      Réinitialiser
+    </button>
   </div>
 
-  <div *ngIf="!(loading$ | async)" class="books-grid">
-    <mat-card *ngFor="let book of books$ | async" class="book-card">
-      <img mat-card-image [src]="book.coverUrl || 'https://via.placeholder.com/150x200'" [alt]="book.title">
+  <!-- Filters (Google Books only) -->
+  <mat-card *ngIf="!useLocalBooks" style="margin-bottom: 20px;">
+    <mat-card-content>
+      <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+        <mat-form-field appearance="outline" style="min-width: 200px;">
+          <mat-label>Genre</mat-label>
+          <mat-select [(ngModel)]="filters.genre" (selectionChange)="onFilterChange()">
+            <mat-option *ngFor="let genre of genres" [value]="genre.value">{{ genre.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" style="min-width: 150px;">
+          <mat-label>Langue</mat-label>
+          <mat-select [(ngModel)]="filters.language" (selectionChange)="onFilterChange()">
+            <mat-option *ngFor="let lang of languages" [value]="lang.value">{{ lang.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" style="min-width: 150px;">
+          <mat-label>Trier par</mat-label>
+          <mat-select [(ngModel)]="filters.orderBy" (selectionChange)="onFilterChange()">
+            <mat-option *ngFor="let sort of sortOptions" [value]="sort.value">{{ sort.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-chip *ngIf="getActiveFiltersCount() > 0" [matBadge]="getActiveFiltersCount()" matBadgeColor="accent">
+          Filtres actifs
+        </mat-chip>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading && displayBooks.length === 0" style="text-align: center; padding: 60px;">
+    <mat-spinner></mat-spinner>
+    <p style="margin-top: 20px; color: #666;">Chargement des livres...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && displayBooks.length === 0 && useLocalBooks" style="text-align: center; padding: 60px; color: #666;">
+    <mat-icon style="font-size: 80px; height: 80px; width: 80px;">library_books</mat-icon>
+    <h3>Catalogue vide</h3>
+    <p>Utilisez la page Import pour ajouter des livres</p>
+  </div>
+
+  <div *ngIf="!loading && displayBooks.length === 0 && !useLocalBooks && searchQuery" style="text-align: center; padding: 60px; color: #666;">
+    <mat-icon style="font-size: 80px; height: 80px; width: 80px;">search_off</mat-icon>
+    <h3>Aucun résultat</h3>
+    <p>Essayez une autre recherche ou modifiez les filtres</p>
+  </div>
+
+  <!-- Books Grid -->
+  <div *ngIf="displayBooks.length > 0" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;">
+    <mat-card *ngFor="let book of displayBooks" style="cursor: pointer; height: 100%;" [routerLink]="['/books', book.id]">
+      <div style="width: 100%; padding-top: 150%; position: relative; background-color: #f5f5f5;">
+        <img [src]="book.coverUrl || '/assets/no-cover.png'" 
+             [alt]="book.title" 
+             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
+      </div>
       <mat-card-content>
-        <h3>{{ book.title }}</h3>
-        <p class="authors">{{ book.authors.join(', ') }}</p>
-        <mat-chip-set>
-          <mat-chip>{{ book.genre }}</mat-chip>
-        </mat-chip-set>
-        <div class="rating">
-          ⭐ {{ book.averageRating.toFixed(1) }} ({{ book.reviewCount }})
+        <h4 style="margin: 10px 0 5px 0; font-size: 14px; height: 40px; overflow: hidden;">
+          {{ book.title }}
+        </h4>
+        <p style="margin: 5px 0; font-size: 12px; color: #666; height: 20px; overflow: hidden;">
+          {{ book.authors.join(', ') }}
+        </p>
+        <div style="display: flex; gap: 5px; margin: 10px 0; flex-wrap: wrap;">
+          <mat-chip style="font-size: 11px; height: 24px; max-width: 100px; display: inline-flex; align-items: center; justify-content: center;">
+            <span style="display: inline-block; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; line-height: 1;">{{ book.genre }}</span>
+          </mat-chip>
+          <mat-chip [color]="book.copiesAvailable > 0 ? 'accent' : 'warn'" selected style="font-size: 11px; height: 24px; max-width: 100px; display: inline-flex; align-items: center; justify-content: center;">
+            <span style="display: inline-block; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; line-height: 1;">
+              {{ book.copiesAvailable > 0 ? 'Disponible' : 'Indisponible' }}
+            </span>
+          </mat-chip>
         </div>
       </mat-card-content>
-      <mat-card-actions>
-        <button mat-raised-button color="primary" [routerLink]="['/books', book.id]">
-          Voir détails
-        </button>
-      </mat-card-actions>
     </mat-card>
   </div>
-</div>
 
+  <!-- Loading More -->
+  <div *ngIf="loadingMore" style="text-align: center; padding: 40px;">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p style="margin-top: 10px; color: #666;">Chargement de plus de livres...</p>
+  </div>
+
+  <!-- Error Message -->
+  <mat-card *ngIf="error" style="margin-top: 20px; background-color: #f8d7da; border: 1px solid #f5c6cb;">
+    <mat-card-content>
+      <p style="color: #721c24; margin: 0;">{{ error }}</p>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Back to Local Button -->
+  <div *ngIf="!useLocalBooks" style="margin-top: 30px; text-align: center;">
+    <button mat-raised-button color="accent" (click)="resetSearch()">
+      <mat-icon>storage</mat-icon>
+      Retour au catalogue local
+    </button>
+  </div>
+</div>

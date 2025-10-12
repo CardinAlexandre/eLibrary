@@ -24,5 +24,9 @@ export class LoginComponent {
       this.store.dispatch(login({ email, password }));
     }
   }
+
+  fillTestAccount(email: string, password: string): void {
+    this.loginForm.patchValue({ email, password });
+  }
 }
 

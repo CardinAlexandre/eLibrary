@@ -1,0 +1,109 @@
+<div class="profile-container" style="max-width: 800px; margin: 40px auto; padding: 20px;">
+  <h2>Mon Profil</h2>
+
+  <div *ngIf="loading" style="text-align: center; padding: 40px;">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="!loading && profile">
+    <mat-card style="margin-bottom: 20px;">
+      <mat-card-header>
+        <mat-card-title>Informations personnelles</mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <form [formGroup]="profileForm">
+          <mat-form-field appearance="outline" style="width: 100%; margin-top: 10px;">
+            <mat-label>Prénom</mat-label>
+            <input matInput formControlName="firstName" [readonly]="!editing">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" style="width: 100%; margin-top: 10px;">
+            <mat-label>Nom</mat-label>
+            <input matInput formControlName="lastName" [readonly]="!editing">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" style="width: 100%; margin-top: 10px;">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" formControlName="email" [readonly]="!editing">
+          </mat-form-field>
+
+          <div *ngIf="editing">
+            <mat-form-field appearance="outline" style="width: 100%; margin-top: 10px;">
+              <mat-label>Mot de passe actuel</mat-label>
+              <input matInput type="password" formControlName="currentPassword">
+              <mat-hint>Laissez vide si vous ne voulez pas changer le mot de passe</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" style="width: 100%; margin-top: 10px;">
+              <mat-label>Nouveau mot de passe</mat-label>
+              <input matInput type="password" formControlName="newPassword">
+            </mat-form-field>
+          </div>
+        </form>
+
+        <div style="margin-top: 20px;">
+          <strong>Rôles : </strong>
+          <mat-chip-set>
+            <mat-chip *ngFor="let role of profile.roles" [color]="role === 'Admin' ? 'warn' : role === 'Librarian' ? 'primary' : 'accent'" selected>
+              {{ role }}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+
+        <mat-divider style="margin: 20px 0;"></mat-divider>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button mat-raised-button color="primary" *ngIf="!editing" (click)="enableEditing()">
+            Modifier
+          </button>
+          <button mat-raised-button color="primary" *ngIf="editing" (click)="saveProfile()" [disabled]="!profileForm.valid || saving">
+            {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
+          </button>
+          <button mat-button *ngIf="editing" (click)="cancelEditing()">
+            Annuler
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Gestion des rôles</mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <p style="color: #666; margin-bottom: 20px;">
+          Gérez vos rôles d'administrateur (fonctionnalité de développement)
+        </p>
+
+        <div *ngIf="!isAdmin()" style="margin-bottom: 20px;">
+          <button mat-raised-button color="warn" (click)="promoteToAdmin()" [disabled]="promoting">
+            <mat-icon>admin_panel_settings</mat-icon>
+            {{ promoting ? 'Promotion en cours...' : 'Devenir Admin' }}
+          </button>
+        </div>
+
+        <div *ngIf="isAdmin()" style="margin-bottom: 20px;">
+          <button mat-raised-button color="accent" (click)="removeAdmin()" [disabled]="removing">
+            <mat-icon>person</mat-icon>
+            {{ removing ? 'Suppression en cours...' : 'Retirer le rôle Admin' }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card *ngIf="success" style="margin-top: 20px; background-color: #d4edda; border: 1px solid #c3e6cb;">
+      <mat-card-content>
+        <p style="color: #155724; margin: 0;">{{ success }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card *ngIf="error" style="margin-top: 20px; background-color: #f8d7da; border: 1px solid #f5c6cb;">
+      <mat-card-content>
+        <p style="color: #721c24; margin: 0;">{{ error }}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+

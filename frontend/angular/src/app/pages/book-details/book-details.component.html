@@ -1,56 +1,164 @@
-<div class="container">
-  <button mat-raised-button (click)="goBack()">
+<div class="book-details-container" style="max-width: 1200px; margin: 40px auto; padding: 20px;">
+  <button mat-button (click)="goBack()" style="margin-bottom: 20px;">
     <mat-icon>arrow_back</mat-icon>
     Retour
   </button>
 
-  <div *ngIf="loading$ | async" class="loading-spinner">
+  <div *ngIf="loading" style="text-align: center; padding: 60px;">
     <mat-spinner></mat-spinner>
   </div>
 
-  <mat-card *ngIf="book$ | async as book" class="book-details">
-    <div class="book-content">
-      <div class="book-image">
-        <img [src]="book.coverUrl || 'https://via.placeholder.com/300x400'" [alt]="book.title">
-      </div>
+  <div *ngIf="error && !book" style="text-align: center; padding: 40px;">
+    <mat-icon style="font-size: 80px; height: 80px; width: 80px; color: #f44336;">error</mat-icon>
+    <h3>Livre introuvable</h3>
+    <p style="color: #666;">{{ error }}</p>
+  </div>
 
-      <div class="book-info">
-        <h1>{{ book.title }}</h1>
-        <h3>Par {{ book.authors.join(', ') }}</h3>
+  <div *ngIf="!loading && book">
+    <mat-card>
+      <mat-card-content>
+        <div style="display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap;">
+          <!-- Book Cover -->
+          <div style="width: 250px; padding-top: 375px; position: relative; background-color: #f5f5f5; border: 1px solid #ddd;">
+            <img [src]="book.coverUrl || '/assets/no-cover.png'" 
+                 [alt]="book.title" 
+                 style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
+          </div>
 
-        <mat-chip-set>
-          <mat-chip>{{ book.bookType }}</mat-chip>
-          <mat-chip>{{ book.genre }}</mat-chip>
-          <mat-chip [color]="book.isAvailable ? 'primary' : 'warn'">
-            {{ book.isAvailable ? 'Disponible' : 'Indisponible' }}
-          </mat-chip>
-        </mat-chip-set>
+          <!-- Book Info -->
+          <div style="flex: 1; min-width: 300px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+              <h2 style="margin: 0;">{{ book.title }}</h2>
+              <mat-chip [color]="isLocalBook ? 'primary' : 'accent'" selected>
+                <mat-icon style="font-size: 16px;">{{ isLocalBook ? 'storage' : 'cloud' }}</mat-icon>
+                {{ isLocalBook ? 'Local' : 'Google' }}
+              </mat-chip>
+            </div>
 
-        <div class="rating">
-          ⭐ {{ book.averageRating.toFixed(1) }} / 5.0 ({{ book.reviewCount }} avis)
+            <h4 style="color: #666; margin: 10px 0;">Par {{ book.authors.join(', ') }}</h4>
+
+            <div style="margin: 15px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+              <mat-chip color="primary" selected>{{ book.bookType }}</mat-chip>
+              <mat-chip>{{ book.genre }}</mat-chip>
+              <mat-chip [color]="book.isAvailable ? 'accent' : 'warn'" selected>
+                {{ book.isAvailable ? 'Disponible' : 'Indisponible' }}
+              </mat-chip>
+            </div>
+
+            <div style="margin: 15px 0;">
+              <span style="color: #ffa726;">★</span>
+              <strong>{{ book.averageRating | number: '1.1-1' }}</strong> / 5.0 
+              ({{ book.reviewCount }} avis)
+            </div>
+
+            <p style="margin: 20px 0; line-height: 1.6;">{{ book.description }}</p>
+
+            <div style="margin: 20px 0;">
+              <p style="margin: 5px 0;"><strong>ISBN:</strong> {{ book.isbn }}</p>
+              <p style="margin: 5px 0;"><strong>Pages:</strong> {{ book.pages }}</p>
+              <p style="margin: 5px 0;"><strong>Langue:</strong> {{ book.language }}</p>
+              <p style="margin: 5px 0;"><strong>Date de publication:</strong> {{ book.publishedDate | date: 'dd/MM/yyyy' }}</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+              <strong>Tags:</strong>
+              <div style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap; max-width: 100%;">
+                <mat-chip *ngFor="let tag of book.tags" [matTooltip]="tag" style="max-width: 200px; display: inline-flex; align-items: center; justify-content: center;">
+                  <span style="display: inline-block; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; line-height: 1;">{{ tag }}</span>
+                </mat-chip>
+              </div>
+            </div>
+
+            <!-- Availability Alert -->
+            <mat-card [style.background-color]="isLocalBook && book.copiesAvailable === 0 ? '#fff3e0' : '#e3f2fd'" style="margin: 20px 0;">
+              <mat-card-content>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <mat-icon>menu_book</mat-icon>
+                  <div *ngIf="isLocalBook">
+                    <strong>Exemplaires disponibles :</strong> {{ book.copiesAvailable }} / {{ book.totalCopies }}
+                    <p *ngIf="book.copiesAvailable === 0" style="margin: 5px 0 0 0; color: #f57c00;">
+                      Tous les exemplaires sont actuellement empruntés
+                    </p>
+                  </div>
+                  <div *ngIf="!isLocalBook">
+                    <strong>Disponibilité :</strong> Ce livre sera ajouté au catalogue avec 3 exemplaires lors de votre premier emprunt
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Success/Error Messages -->
+            <mat-card *ngIf="success" style="margin: 20px 0; background-color: #d4edda; border: 1px solid #c3e6cb;">
+              <mat-card-content>
+                <p style="color: #155724; margin: 0;">{{ success }}</p>
+              </mat-card-content>
+            </mat-card>
+
+            <mat-card *ngIf="error" style="margin: 20px 0; background-color: #f8d7da; border: 1px solid #f5c6cb;">
+              <mat-card-content>
+                <p style="color: #721c24; margin: 0;">{{ error }}</p>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- User Already Borrowed Message -->
+            <mat-card *ngIf="!checkingLoan && hasActiveUserLoan" style="margin: 20px 0; background-color: #e3f2fd; border: 1px solid #90caf9;">
+              <mat-card-content>
+                <p style="color: #0d47a1; margin: 0;">
+                  📖 Vous avez déjà emprunté ce livre. Vous ne pouvez pas l'emprunter à nouveau tant que vous ne l'avez pas retourné.
+                </p>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Borrow Button -->
+            <button mat-raised-button color="primary" 
+                    *ngIf="!checkingLoan && !hasActiveUserLoan && (!isLocalBook || (isLocalBook && book.copiesAvailable > 0))"
+                    (click)="borrowBook()" 
+                    [disabled]="borrowing"
+                    style="margin-top: 20px; font-size: 16px; padding: 10px 30px;">
+              <mat-icon>book</mat-icon>
+              {{ borrowing ? 'Emprunt en cours...' : (isLocalBook ? 'Emprunter ce livre (14 jours)' : 'Ajouter au catalogue et emprunter (14 jours)') }}
+            </button>
+
+            <!-- No Copies Available -->
+            <mat-card *ngIf="!hasActiveUserLoan && isLocalBook && book.copiesAvailable <= 0" style="margin: 20px 0; background-color: #fff3e0; border: 1px solid #ffb74d;">
+              <mat-card-content>
+                <p style="color: #e65100; margin: 0;">
+                  ⚠️ Ce livre n'a plus d'exemplaires disponibles. Tous les exemplaires sont actuellement empruntés.
+                </p>
+              </mat-card-content>
+            </mat-card>
+          </div>
         </div>
+      </mat-card-content>
+    </mat-card>
 
-        <p class="description">{{ book.description }}</p>
-
-        <div class="metadata">
-          <p><strong>ISBN:</strong> {{ book.isbn }}</p>
-          <p><strong>Pages:</strong> {{ book.pages }}</p>
-          <p><strong>Langue:</strong> {{ book.language }}</p>
-          <p><strong>Date de publication:</strong> {{ book.publishedDate | date }}</p>
+    <!-- Active Loans Section -->
+    <mat-card *ngIf="isLocalBook && loans.length > 0" style="margin-top: 20px;">
+      <mat-card-header>
+        <mat-card-title>📋 Emprunts actifs ({{ loans.length }})</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngFor="let loan of loans" 
+             style="padding: 15px; margin: 10px 0; border: 1px solid #e0e0e0; border-radius: 4px;"
+             [style.border-left]="loan.isOverdue ? '4px solid #f44336' : '4px solid #4caf50'">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div>
+              <strong>👤 {{ loan.userName || loan.userEmail }}</strong>
+              <p style="margin: 5px 0; font-size: 14px; color: #666;">
+                Emprunté le {{ loan.loanDate | date: 'dd/MM/yyyy' }}
+              </p>
+              <p style="margin: 5px 0; font-size: 14px;" [style.color]="loan.isOverdue ? '#f44336' : '#666'">
+                À retourner le {{ loan.dueDate | date: 'dd/MM/yyyy' }}
+                <span *ngIf="loan.isOverdue" style="font-weight: bold;"> (⚠️ {{ loan.daysOverdue }} jour(s) de retard)</span>
+              </p>
+              <p *ngIf="loan.isOverdue && loan.lateFee > 0" style="margin: 5px 0; color: #f44336; font-weight: bold;">
+                Pénalité de retard : {{ loan.lateFee | number: '1.2-2' }} €
+              </p>
+            </div>
+            <mat-chip [color]="loan.isOverdue ? 'warn' : 'accent'" selected>{{ loan.status }}</mat-chip>
+          </div>
         </div>
-
-        <div class="tags">
-          <strong>Tags:</strong>
-          <mat-chip-set>
-            <mat-chip *ngFor="let tag of book.tags">{{ tag }}</mat-chip>
-          </mat-chip-set>
-        </div>
-
-        <button *ngIf="book.isAvailable" mat-raised-button color="primary" class="borrow-btn">
-          Emprunter ce livre
-        </button>
-      </div>
-    </div>
-  </mat-card>
+      </mat-card-content>
+    </mat-card>
+  </div>
 </div>
-

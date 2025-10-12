@@ -1,55 +1,23 @@
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
+.book-details-container {
   padding: 20px;
 }
 
-.loading-spinner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
+mat-card {
+  margin-bottom: 20px;
 }
 
-.book-details {
-  margin-top: 20px;
+::ng-deep mat-chip .mat-chip-label,
+::ng-deep mat-chip .mdc-evolution-chip__text-label {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
 }
 
-.book-content {
+.tags-container {
   display: flex;
-  gap: 30px;
+  gap: 5px;
   flex-wrap: wrap;
+  max-width: 100%;
 }
-
-.book-image img {
-  max-width: 300px;
-  border-radius: 8px;
-}
-
-.book-info {
-  flex: 1;
-  min-width: 300px;
-}
-
-.rating {
-  margin: 16px 0;
-  font-size: 1.1rem;
-}
-
-.description {
-  margin: 20px 0;
-  line-height: 1.6;
-}
-
-.metadata {
-  margin: 20px 0;
-}
-
-.tags {
-  margin: 20px 0;
-}
-
-.borrow-btn {
-  margin-top: 20px;
-}
-

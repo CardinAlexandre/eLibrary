@@ -3,9 +3,45 @@
   <span style="margin-left: 10px; cursor: pointer;" routerLink="/">eLibrary</span>
   <span style="flex: 1;"></span>
   
-  <button mat-button routerLink="/">Catalogue</button>
-  <button mat-button routerLink="/search">Recherche</button>
-  <button mat-button routerLink="/login">Connexion</button>
+  <button mat-button routerLink="/">
+    <mat-icon>home</mat-icon>
+    Catalogue
+  </button>
+  
+  <button mat-button routerLink="/loans" *ngIf="isAuthenticated">
+    <mat-icon>book</mat-icon>
+    Mes Emprunts
+  </button>
+  
+  <button mat-button routerLink="/import" *ngIf="isAdmin() || isLibrarian()">
+    <mat-icon>upload</mat-icon>
+    Import
+  </button>
+  
+  <button mat-button routerLink="/dashboard" *ngIf="isAdmin() || isLibrarian()">
+    <mat-icon>dashboard</mat-icon>
+    Dashboard
+  </button>
+  
+  <button mat-button routerLink="/profile" *ngIf="isAuthenticated">
+    <mat-icon>account_circle</mat-icon>
+    Profil
+  </button>
+  
+  <button mat-button routerLink="/login" *ngIf="!isAuthenticated">
+    <mat-icon>login</mat-icon>
+    Connexion
+  </button>
+  
+  <button mat-button routerLink="/register" *ngIf="!isAuthenticated">
+    <mat-icon>person_add</mat-icon>
+    Inscription
+  </button>
+  
+  <button mat-button (click)="logout()" *ngIf="isAuthenticated">
+    <mat-icon>logout</mat-icon>
+    Déconnexion
+  </button>
   
   <button mat-icon-button (click)="toggleTheme()">
     <mat-icon>{{ (darkMode$ | async) ? 'brightness_7' : 'brightness_4' }}</mat-icon>
